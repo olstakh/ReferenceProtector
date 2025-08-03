@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.v3.assert" />
+    <PackageReference Include="xunit.v3.core" />
+  </ItemGroup>
+
+  <!-- Exclude Manual folder from compilation -->
+    <ItemGroup>
+      <Compile Remove="Manual\**" />
+      <Content Include="Manual\**" Exclude="Manual\**\bin\**;Manual\**\obj\**">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>    
+    <ItemGroup>
+      <ProjectReference Include="..\ReferenceProtector.Tasks\ReferenceProtector.Tasks.csproj" />
+    </ItemGroup>
+
+</Project>
