@@ -1,4 +1,7 @@
-﻿using Microsoft.Build.Framework;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Microsoft.Build.Framework;
 
 namespace ReferenceProtector.Tasks;
 
@@ -10,12 +13,58 @@ public class CollectAllReferences : Microsoft.Build.Utilities.Task
     [Required]
     public string? OutputFile { get; set; }
 
-    [Output]
-    public string OutputMessage { get; set; } = string.Empty;
+    [Required]
+    public string? MsBuildProjectFile { get; set; }
+
+    public ITaskItem[] ProjectReferences { get; set; } = [];
 
     public override bool Execute()
     {
-        OutputMessage = OutputFile ?? "N/A";
-        return true;
+        if (MsBuildProjectFile is null)
+        {
+            Log.LogError("MsBuildProjectFile must be provided.");
+            return false;
+        }
+
+        List<ReferenceItem> references = new List<ReferenceItem>();
+        foreach (var projectReference in ProjectReferences)
+        {
+            var projectReferenceAssemblyPath = Path.GetFullPath(projectReference.ItemSpec);
+            var referenceProjectFile = projectReference.GetMetadata("OriginalProjectReferenceItemSpec");
+
+            // Weirdly, NuGet restore is actually how transitive project references are determined and they're
+            // added to to project.assets.json and collected via the IncludeTransitiveProjectReferences target.
+            // This also adds the NuGetPackageId metadata, so use that as a signal that it's transitive.
+            bool isTransitiveDependency = !string.IsNullOrEmpty(projectReference.GetMetadata("NuGetPackageId"));
+
+            references.Add(new ReferenceItem(
+                Source: MsBuildProjectFile,
+                Target: projectReferenceAssemblyPath,
+                LinkType: isTransitiveDependency ? ReferenceKind.ProjectReferenceTransitive : ReferenceKind.ProjectReferenceDirect));
+        }
+
+        if (OutputFile is not null)
+        {
+            new ReferenceItems(references).SaveToFile(OutputFile);
+            return true;
+        }
+
+        return false;
     }
+
+    internal enum ReferenceKind
+    {
+        ProjectReferenceDirect,
+        ProjectReferenceTransitive,
+    }
+
+    internal record ReferenceItems(List<ReferenceItem> Items)
+    {
+        public void SaveToFile(string outputFile)
+        {
+            File.WriteAllLines(outputFile, Items.Select(item => $"{item.Source}\t{item.LinkType}\t{item.Target}"));
+        }
+    }
+
+    internal record ReferenceItem(string Source, string Target, ReferenceKind LinkType);
 }

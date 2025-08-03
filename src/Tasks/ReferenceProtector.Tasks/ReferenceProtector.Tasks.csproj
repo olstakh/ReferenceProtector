@@ -11,4 +11,8 @@
     <PackageReference Include="NuGet.ProjectModel" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\..\Shared\*.cs" />
+  </ItemGroup>
+
 </Project>
