@@ -23,7 +23,7 @@
   <!-- Exclude Manual folder from compilation -->
     <ItemGroup>
       <Compile Remove="Manual\**" />
-      <Content Include="Manual\**" Exclude="Manual\**\bin\**;Manual\**\obj\**">
+      <Content Include="..\..\Build\**">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
     </ItemGroup>
