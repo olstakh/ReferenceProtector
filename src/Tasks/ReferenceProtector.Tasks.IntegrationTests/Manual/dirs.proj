@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.Build.Traversal">
-    <Import Project="..\..\..\Build\ReferenceProtector.Build.props" />
-    <Import Project="..\..\..\Build\ReferenceProtector.Build.targets" />
-    <ItemGroup>
-        <ProjectReference Include="**\dirs.proj" />
-        <ProjectReference Include="**\*.csproj" />
-    </ItemGroup>
-</Project>
