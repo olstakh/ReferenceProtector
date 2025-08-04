@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
+using ReferenceModels;
 
 namespace ReferenceProtector.Tasks;
 
@@ -45,26 +47,10 @@ public class CollectAllReferences : Microsoft.Build.Utilities.Task
 
         if (OutputFile is not null)
         {
-            new ReferenceItems(references).SaveToFile(OutputFile);
+            references.SaveToFile(OutputFile);
             return true;
         }
 
         return false;
     }
-
-    internal enum ReferenceKind
-    {
-        ProjectReferenceDirect,
-        ProjectReferenceTransitive,
-    }
-
-    internal record ReferenceItems(List<ReferenceItem> Items)
-    {
-        public void SaveToFile(string outputFile)
-        {
-            File.WriteAllLines(outputFile, Items.Select(item => $"{item.Source}\t{item.LinkType}\t{item.Target}"));
-        }
-    }
-
-    internal record ReferenceItem(string Source, string Target, ReferenceKind LinkType);
 }

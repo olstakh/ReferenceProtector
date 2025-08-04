@@ -22,7 +22,7 @@
 
   <!-- Exclude Manual folder from compilation -->
     <ItemGroup>
-      <Compile Remove="Manual\**" />
+      <Compile Include="..\..\Shared\ReferenceModels.cs" />
       <Content Include="..\..\Build\**">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>

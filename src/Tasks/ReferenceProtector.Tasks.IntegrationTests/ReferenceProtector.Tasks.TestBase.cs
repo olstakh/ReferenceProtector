@@ -105,7 +105,7 @@ public class Class1
         var projectPath = Path.Combine(TestDirectory, projectName, $"{projectName}.csproj");
         var referencePath = Path.Combine(TestDirectory, referenceProjectName, $"{referenceProjectName}.csproj");
 
-        await RunDotnetCommandAsync(TestDirectory, $"add {projectPath} reference {referencePath}");
+        await RunDotnetCommandAsync(TestDirectory, $"add {projectPath} reference {referencePath}", TestContext.Current.CancellationToken);
     }
 
     internal async Task Build()
@@ -117,7 +117,7 @@ public class Class1
             $"/p:ReferenceProtectorTaskAssembly={Path.Combine(Directory.GetCurrentDirectory(), "ReferenceProtector.Tasks.dll")} " +
             $"/v:m";
 
-        await RunDotnetCommandAsync(TestDirectory, buildArgs);
+        await RunDotnetCommandAsync(TestDirectory, buildArgs, TestContext.Current.CancellationToken);
     }
 
     internal List<string> GetGeneratedReferencesFiles()
@@ -126,7 +126,7 @@ public class Class1
         return files.ToList();
     }
 
-    private async Task RunDotnetCommandAsync(string workingDirectory, string args)
+    private async Task RunDotnetCommandAsync(string workingDirectory, string args, CancellationToken ct)
     {
         Output.WriteLine($"Running dotnet with arguments: {args}");
         var process = Process.Start(new ProcessStartInfo
@@ -143,10 +143,10 @@ public class Class1
         Assert.NotNull(process);
         Assert.False(process.HasExited);
 
-        string output = await process.StandardOutput.ReadToEndAsync();
-        string error = await process.StandardError.ReadToEndAsync();
+        string output = await process.StandardOutput.ReadToEndAsync(ct);
+        string error = await process.StandardError.ReadToEndAsync(ct);
 
-        await process.WaitForExitAsync();
+        await process.WaitForExitAsync(ct);
 
         Output.WriteLine($"MSBuild Output: {output}");
         Output.WriteLine($"MSBuild Error: {error}");
