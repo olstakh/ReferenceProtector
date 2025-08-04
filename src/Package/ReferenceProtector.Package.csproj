@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.Build.NoTargets">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <PackageId>ReferenceProtector</PackageId>
+    <IsTool>true</IsTool>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);GetMyPackageFiles</TargetsForTfmSpecificContentInPackage>
+    <IncludeSymbols>false</IncludeSymbols>
+    <PackageOutputPath>$(RepoRoot)\artifacts</PackageOutputPath>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <!-- Avoid cycle when dogfooding the published package. -->
+    <DisableRefTrimPackageRef>true</DisableRefTrimPackageRef>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Analyzers\ReferenceProtector.Analyzers\ReferenceProtector.Analyzers.csproj"
+                      OutputItemType="ReferenceProtectorOutputGroup"
+                      PackagePath="analyzers/dotnet/cs" />
+    <ProjectReference Include="..\Tasks\ReferenceProtector.Tasks\ReferenceProtector.Tasks.csproj"
+                      OutputItemType="ReferenceProtectorOutputGroup"
+                      PackagePath="build" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\Build\*">
+      <Pack>true</Pack>
+      <PackagePath>build</PackagePath>
+    </Content>
+    <Content Include="..\Build\*">
+      <Pack>true</Pack>
+      <PackagePath>buildMultiTargeting</PackagePath>
+    </Content>
+    <Content Include="..\..\README.md">
+      <Pack>true</Pack>
+      <PackagePath>\</PackagePath>
+    </Content>
+  </ItemGroup>
+  <Target Name="GetMyPackageFiles" DependsOnTargets="ResolveProjectReferences">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="%(ReferenceProtectorOutputGroup.RootDir)%(ReferenceProtectorOutputGroup.Directory)*.dll"
+                              Pack="true"
+                              PackagePath="%(ReferenceProtectorOutputGroup.PackagePath)" />
+    </ItemGroup>
+  </Target>
+</Project>

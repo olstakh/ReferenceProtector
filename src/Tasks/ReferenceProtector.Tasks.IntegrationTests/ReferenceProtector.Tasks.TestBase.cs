@@ -62,7 +62,7 @@ public class TestBase : IDisposable
 
             File.WriteAllText(Path.Combine(testDirectory, "Directory.Build.props"), """
 <Project>
-  <Import Project="..\ReferenceProtector.Build.props" />
+  <Import Project="..\ReferenceProtector.props" />
 </Project>
 """);
         }
@@ -74,7 +74,7 @@ public class TestBase : IDisposable
 
             File.WriteAllText(Path.Combine(testDirectory, "Directory.Build.targets"), """
 <Project>
-  <Import Project="..\ReferenceProtector.Build.targets" />
+  <Import Project="..\ReferenceProtector.targets" />
 </Project>
 """);
         }
