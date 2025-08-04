@@ -9,7 +9,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Shared\*.cs" Exclude="..\..\Shared\ReferenceItemExtensions.cs" />
+  </ItemGroup>  
 
   <ItemGroup>
     <InternalsVisibleTo Include="ReferenceProtector.Analyzers.Tests" />

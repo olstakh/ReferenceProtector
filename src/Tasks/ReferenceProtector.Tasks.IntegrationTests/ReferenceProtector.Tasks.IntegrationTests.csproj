@@ -23,6 +23,7 @@
   <!-- Exclude Manual folder from compilation -->
     <ItemGroup>
       <Compile Include="..\..\Shared\ReferenceModels.cs" />
+      <Compile Include="..\..\Shared\ReferenceModelsExtensions.cs" />
       <Content Include="..\..\Build\**">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>

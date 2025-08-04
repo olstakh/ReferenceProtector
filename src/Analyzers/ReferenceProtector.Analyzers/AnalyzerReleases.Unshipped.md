@@ -5,4 +5,6 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-RP0001 | Usage | Warning | DiagnosticDescriptors### New Rules
+RP0001 | Usage | Warning | DiagnosticDescriptors
+RP0002 | Usage | Warning | Descriptors
+RP0003 | Usage | Info | Descriptors
