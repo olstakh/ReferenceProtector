@@ -14,6 +14,10 @@ using DiagnosticDescriptors;
 using ReferenceModels;
 using ReferenceProtector.Analyzers.Models;
 
+/// <summary>
+/// Analyzer for the Reference Protector project.
+/// This analyzer checks project references against defined dependency rules.
+/// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
 {
@@ -32,12 +36,14 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
         }        
     };
 
+    /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [
         Descriptors.DependencyRulesNotProvided,
         Descriptors.InvalidDependencyRulesFormat,
         Descriptors.NoDependencyRulesMatchedCurrentProject,
         Descriptors.ProjectReferenceViolation];
 
+    /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
     {
         context.EnableConcurrentExecution();

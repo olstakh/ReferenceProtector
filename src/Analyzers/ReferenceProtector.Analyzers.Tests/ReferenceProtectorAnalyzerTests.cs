@@ -4,8 +4,15 @@ using Xunit;
 
 namespace ReferenceProtector.Analyzers.Tests;
 
+/// <summary>
+/// Reference Protector analyzer tests.
+/// These tests verify that the analyzer correctly identifies issues with project references based on defined dependency rules.
+/// </summary>
 public class ReferenceProtectorAnalyzerTests
 {
+    /// <summary>
+    /// Verifies that the analyzer reports a diagnostic when no dependency rules file is provided.
+    /// </summary>
     [Fact]
     public async Task NoDependencyRulesFile_ShouldReportDiagnostic_Async()
     {
@@ -19,6 +26,9 @@ public class ReferenceProtectorAnalyzerTests
         await test.RunAsync(TestContext.Current.CancellationToken);
     }
 
+    /// <summary>
+    /// Verifies that the analyzer reports a diagnostic when the dependency rules file is invalid.
+    /// </summary>
     [Fact]
     public async Task InvalidDependencyRulesFile_ShouldReportDiagnostic_Async()
     {
@@ -34,6 +44,9 @@ public class ReferenceProtectorAnalyzerTests
         await test.RunAsync(TestContext.Current.CancellationToken);
     }
 
+    /// <summary>
+    /// Verifies that the analyzer reports a diagnostic when no dependency rules match the current project.
+    /// </summary>
     [Fact]
     public async Task DependencyRulesFileProvided_ShouldReportIfNoMatches_Async()
     {
@@ -48,6 +61,9 @@ public class ReferenceProtectorAnalyzerTests
         await test.RunAsync(TestContext.Current.CancellationToken);
     }
 
+    /// <summary>
+    /// Verifies that the analyzer reports a diagnostic when a project reference violates a defined dependency rule.
+    /// </summary>
     [Fact]
     public async Task ValidDependencyRulesFile_DependencyViolated_ShouldReportDiagnostic_Async()
     {
@@ -91,6 +107,9 @@ public class ReferenceProtectorAnalyzerTests
         await test.RunAsync(TestContext.Current.CancellationToken);
     }
 
+    /// <summary>
+    /// Verifies that the analyzer does not report a diagnostic when a project reference matches an exception in the dependency rules.
+    /// </summary>
     [Fact]
     public async Task ValidDependencyRulesFile_DependencyViolated_ExceptionsMatched_ShouldNotReportDiagnostic_Async()
     {
@@ -129,8 +148,11 @@ public class ReferenceProtectorAnalyzerTests
             """));
 
         await test.RunAsync(TestContext.Current.CancellationToken);
-    }    
+    }
 
+    /// <summary>
+    /// Verifies that the analyzer does not report a diagnostic when the dependency rules file is valid and no declared references are present.
+    /// </summary>
     [Fact]
     public async Task ValidDependencyRulesFile_NoDeclaredReferences_ShouldNotReportDiagnostics_Async()
     {

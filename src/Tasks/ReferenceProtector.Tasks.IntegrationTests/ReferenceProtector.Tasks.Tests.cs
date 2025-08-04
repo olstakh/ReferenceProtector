@@ -6,12 +6,23 @@ using Xunit;
 
 namespace ReferenceProtector.Tasks.Tests;
 
+/// <summary>
+/// Integration tests for the CollectAllReferences task.
+/// These tests verify that the task correctly collects all project references and their links.
+/// </summary>
 public class CollectAllReferencesIntegrationTests : TestBase
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CollectAllReferencesIntegrationTests"/> class.
+    /// </summary>
+    /// <param name="output">The output helper for logging test output.</param>
     public CollectAllReferencesIntegrationTests(ITestOutputHelper output) : base(output)
     {
     }
 
+    /// <summary>
+    /// Verifies that the CollectAllReferences task generates the expected files.
+    /// </summary>
     [Fact]
     public async Task CollectAllReferences_FilesAreGenerated_Async()
     {
@@ -27,6 +38,9 @@ public class CollectAllReferencesIntegrationTests : TestBase
         Assert.Empty(references);
     }
 
+    /// <summary>
+    /// Verifies that the CollectAllReferences task correctly collects all project references and their links.
+    /// </summary>
     [Fact]
     public async Task CollectAllReferences_LinksAreCorrect_Async()
     {

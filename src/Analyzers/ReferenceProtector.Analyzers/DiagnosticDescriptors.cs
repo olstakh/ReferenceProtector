@@ -2,6 +2,8 @@ using Microsoft.CodeAnalysis;
 
 namespace ReferenceProtector.Analyzers.DiagnosticDescriptors;
 
+#pragma warning disable RS1037 // Add "CompilationEnd" custom tag to the diagnostic descriptor used to initialize field 'xxx' as it is used to report a compilation end diagnostic
+
 internal static class Descriptors
 {
     public static readonly DiagnosticDescriptor DependencyRulesNotProvided = new(

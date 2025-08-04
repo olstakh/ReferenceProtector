@@ -2,10 +2,10 @@ using System.Collections.Generic;
 
 namespace ReferenceProtector.Analyzers.Models;
 
-public record DependencyRules(
+internal record DependencyRules(
     IReadOnlyCollection<ProjectDependency> ProjectDependencies);
 
-public record ProjectDependency(
+internal record ProjectDependency(
     string From,
     string To,
     string Description,
@@ -13,18 +13,18 @@ public record ProjectDependency(
     LinkType LinkType,
     IReadOnlyCollection<Exceptions>? Exceptions);
 
-public record Exceptions(
+internal record Exceptions(
     string From,
     string To,
     string Justification);
 
-public enum Policy
+internal enum Policy
 {
     Allowed,
     Forbidden
 }
 
-public enum LinkType
+internal enum LinkType
 {
     Direct,
     Transitive,

@@ -20,5 +20,8 @@
     <PackageVersion Include="xunit.v3" Version="3.0.0" />
     <PackageVersion Include="xunit.v3.assert" Version="3.0.0" />
     <PackageVersion Include="xunit.v3.core" Version="3.0.0" />
+
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
+    <PackageVersion Include="Nerdbank.GitVersioning" Version="3.5.109" />
   </ItemGroup>
 </Project>

@@ -12,14 +12,28 @@ namespace ReferenceProtector.Tasks;
 /// </summary>
 public class CollectAllReferences : Microsoft.Build.Utilities.Task
 {
+    /// <summary>
+    /// The output file to save the collected references to.
+    /// </summary>
     [Required]
     public string? OutputFile { get; set; }
 
+    /// <summary>
+    /// The MSBuild project file to collect references from.
+    /// This is typically the project file that contains the references to be collected.
+    /// </summary>
     [Required]
     public string? MsBuildProjectFile { get; set; }
 
+    /// <summary>
+    /// The project references to collect.
+    /// This is a collection of project references that will be processed to collect their assembly paths and link types.
+    /// Each project reference should have the `OriginalProjectReferenceItemSpec` metadata set to the original project file path.
+    /// This metadata is used to determine the original project reference item specification.
+    /// </summary>
     public ITaskItem[] ProjectReferences { get; set; } = [];
 
+    /// <inheritdoc />
     public override bool Execute()
     {
         if (MsBuildProjectFile is null)

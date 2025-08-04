@@ -3,11 +3,30 @@ using Xunit;
 
 namespace ReferenceProtector.Tasks.IntegrationTests;
 
+/// <summary>
+/// Base class for integration tests.
+/// </summary>
 public class TestBase : IDisposable
 {
+    /// <summary>
+    /// Output helper for logging test output.
+    /// This is used to capture output during test execution, which can be useful for debugging.
+    /// </summary>
     protected ITestOutputHelper Output { get; }
+
+    /// <summary>
+    /// Temporary directory for on-the-fly generated test projects.
+    /// </summary>
     protected string TestDirectory { get; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TestBase"/> class.
+    /// This constructor sets up the test environment by creating a unique directory for each test run.
+    /// It also creates necessary files like `dirs.proj`, `Directory.Build.props`, and `Directory.Build.targets` in the test directory.
+    /// The `ITestOutputHelper` is used to log messages during the test execution, which can be useful for debugging purposes.
+    /// The test directory is created with a unique identifier to avoid conflicts between different test runs.
+    /// </summary>
+    /// <param name="output">The output helper for logging test output.</param>
     public TestBase(ITestOutputHelper output)
     {
         Output = output;
@@ -154,6 +173,7 @@ public class Class1
         Assert.Equal(0, process.ExitCode);
     }
 
+    /// <inheritdoc/>
     public void Dispose()
     {
         Output.WriteLine("Disposing CollectAllReferencesIntegrationTests...");
