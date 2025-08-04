@@ -48,6 +48,29 @@ public class ReferenceProtectorAnalyzerTests
         await test.RunAsync(TestContext.Current.CancellationToken);
     }
 
+    [Fact]
+    public async Task ValidDependencyRulesFile_ShouldNotReportDiagnostics_Async()
+    {
+        var test = GetAnalyzer();
+        test.TestState.AdditionalFiles.Add(
+            ("DependencyRules.json", """
+            {
+                "ProjectDependencies": [
+                    {
+                        "From": "TestProject.csproj",
+                        "To": "ReferencedProject",
+                        "Description": "Test dependency",
+                        "Policy": "Allowed",
+                        "LinkType": "Direct"
+                    }
+                ]
+            }
+            """));
+
+        // No diagnostics expected
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
     private AnalyzerTest<DefaultVerifier> GetAnalyzer() =>
         new CSharpAnalyzerTest<ReferenceProtectorAnalyzer, DefaultVerifier>()
         {
@@ -60,5 +83,5 @@ public class ReferenceProtectorAnalyzerTests
                     """) },
             },
             ReferenceAssemblies = ReferenceAssemblies.Net.Net90
-        };    
+        };
 }

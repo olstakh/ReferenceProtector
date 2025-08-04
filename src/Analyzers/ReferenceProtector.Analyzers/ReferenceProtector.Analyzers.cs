@@ -7,6 +7,7 @@ using System.Text.Json;
 
 namespace ReferenceProtector.Analyzers;
 
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using DiagnosticDescriptors;
 using ReferenceProtector.Analyzers.Models;
@@ -24,7 +25,11 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
         PropertyNameCaseInsensitive = true,
         ReadCommentHandling = JsonCommentHandling.Skip,
         AllowTrailingCommas = true,
-        IncludeFields = true
+        IncludeFields = true,
+        Converters = {
+            new JsonStringEnumConverter<LinkType>(),
+            new JsonStringEnumConverter<Policy>()
+        }        
     };
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [
@@ -58,7 +63,7 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
         {
             rules = JsonSerializer.Deserialize<DependencyRules>(content, s_jsonSerializerOptions);
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
         }
 
