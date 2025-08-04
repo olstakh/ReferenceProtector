@@ -49,7 +49,90 @@ public class ReferenceProtectorAnalyzerTests
     }
 
     [Fact]
-    public async Task ValidDependencyRulesFile_ShouldNotReportDiagnostics_Async()
+    public async Task ValidDependencyRulesFile_DependencyViolated_ShouldReportDiagnostic_Async()
+    {
+        var test = GetAnalyzer();
+        test.TestState.AdditionalFiles.Add(
+            ("DependencyRules.json", """
+            {
+                "ProjectDependencies": [
+                    {
+                        "From": "TestProject.csproj",
+                        "To": "ReferencedProject.csproj",
+                        "Description": "Can't reference this project directly",
+                        "Policy": "Forbidden",
+                        "LinkType": "Direct"
+                    },
+                    {
+                        "From": "TestProject.csproj",
+                        "To": "TransitiveReferencedProject.csproj",
+                        "Description": "Can't reference this project transitively",
+                        "Policy": "Forbidden",
+                        "LinkType": "Transitive"
+                    },
+                ]
+            }
+            """));
+
+        test.TestState.AdditionalFiles.Add(
+            ("references.tsv", """
+            TestProject.csproj	ProjectReferenceDirect	ReferencedProject.csproj
+            TestProject.csproj	ProjectReferenceTransitive	TransitiveReferencedProject.csproj
+            """));
+
+        test.ExpectedDiagnostics.Add(DiagnosticResult.CompilerWarning("RP0004")
+            .WithNoLocation()
+            .WithMessage("Project reference 'TestProject.csproj' ==> 'ReferencedProject.csproj' violates dependency rule 'Can't reference this project directly' or one of its exceptions"));
+
+        test.ExpectedDiagnostics.Add(DiagnosticResult.CompilerWarning("RP0004")
+            .WithNoLocation()
+            .WithMessage("Project reference 'TestProject.csproj' ==> 'TransitiveReferencedProject.csproj' violates dependency rule 'Can't reference this project transitively' or one of its exceptions"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
+    public async Task ValidDependencyRulesFile_DependencyViolated_ExceptionsMatched_ShouldNotReportDiagnostic_Async()
+    {
+        var test = GetAnalyzer();
+        test.TestState.AdditionalFiles.Add(
+            ("DependencyRules.json", """
+            {
+                "ProjectDependencies": [
+                    {
+                        "From": "*",
+                        "To": "*",
+                        "Description": "Can't reference this project directly",
+                        "Policy": "Forbidden",
+                        "LinkType": "DirectOrTransitive",
+                        "Exceptions": [
+                            {
+                                "From": "TestProject.csproj",
+                                "To": "ReferencedProject.csproj",
+                                "Justification": "This is an exception"
+                            },
+                            {
+                                "From": "TestProject.csproj",
+                                "To": "TransitiveReferencedProject.csproj",
+                                "Justification": "This is an exception"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """));
+
+        test.TestState.AdditionalFiles.Add(
+            ("references.tsv", """
+            TestProject.csproj	ProjectReferenceDirect	ReferencedProject.csproj
+            TestProject.csproj	ProjectReferenceTransitive	TransitiveReferencedProject.csproj
+            """));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }    
+
+    [Fact]
+    public async Task ValidDependencyRulesFile_NoDeclaredReferences_ShouldNotReportDiagnostics_Async()
     {
         var test = GetAnalyzer();
         test.TestState.AdditionalFiles.Add(

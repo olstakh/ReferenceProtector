@@ -10,6 +10,7 @@ namespace ReferenceProtector.Analyzers;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using DiagnosticDescriptors;
+using ReferenceModels;
 using ReferenceProtector.Analyzers.Models;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
@@ -35,7 +36,8 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [
         Descriptors.DependencyRulesNotProvided,
         Descriptors.InvalidDependencyRulesFormat,
-        Descriptors.NoDependencyRulesMatchedCurrentProject];
+        Descriptors.NoDependencyRulesMatchedCurrentProject,
+        Descriptors.ProjectReferenceViolation];
 
     public override void Initialize(AnalysisContext context)
     {
@@ -63,7 +65,7 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
         {
             rules = JsonSerializer.Deserialize<DependencyRules>(content, s_jsonSerializerOptions);
         }
-        catch (JsonException ex)
+        catch (JsonException)
         {
         }
 
@@ -94,16 +96,69 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        var declaredReferences = context.Options.AdditionalFiles
+        var declaredReferencesFile = context.Options.AdditionalFiles
             .FirstOrDefault(file => file.Path.EndsWith(DeclaredReferencesFile, StringComparison.OrdinalIgnoreCase));
 
-        if (declaredReferences == null)
+        if (declaredReferencesFile == null)
         {
             // Diagnostic?
             return;
         }
 
+        var declaredReferencesContent = declaredReferencesFile.GetText(context.CancellationToken)?.Lines;
+        if (declaredReferencesContent == null)
+        {
+            return;
+        }
+
+        var declaredReferences = declaredReferencesContent
+            .Select(line => ReferenceItem.FromLine(line.ToString()))
+            .Where(r => IsMatchByName(r.Source, projectPath));
+
+        AnalyzeDeclaredReferences(context, declaredReferences.ToImmutableArray(), thisProjectDependencyRules.ToImmutableArray());
+
         // Analyze the content of the dependency rules file
+    }
+
+    private void AnalyzeDeclaredReferences(
+        CompilationAnalysisContext context,
+        ImmutableArray<ReferenceItem> declaredReferences,
+        ImmutableArray<ProjectDependency> dependencyRules)
+    {
+        foreach (var reference in declaredReferences)
+        {
+            var matchingRules = dependencyRules
+                .Where(rule => IsMatchByName(rule.From, reference.Source) && IsMatchByName(rule.To, reference.Target))
+                .Where(rule => rule.LinkType != LinkType.Transitive && reference.LinkType == ReferenceKind.ProjectReferenceDirect ||
+                               rule.LinkType != LinkType.Direct && reference.LinkType == ReferenceKind.ProjectReferenceTransitive)
+                .ToList();
+
+            // Process the matching rules
+            foreach (var rule in matchingRules)
+            {
+                // Apply the rule logic here
+                var anyExceptionsMatched = rule.Exceptions?.Any(exception =>
+                    IsMatchByName(exception.From, reference.Source) &&
+                    IsMatchByName(exception.To, reference.Target)) ?? false;
+
+                var referenceValid = rule.Policy switch
+                {
+                    Policy.Allowed when !anyExceptionsMatched => true,
+                    Policy.Forbidden when anyExceptionsMatched => true,
+                    _ => false
+                };
+
+                if (!referenceValid)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Descriptors.ProjectReferenceViolation,
+                        Location.None,
+                        reference.Source,
+                        reference.Target,
+                        rule.Description));
+                }
+            }
+        }
     }
     
     private static bool IsMatchByName(string pattern, string project)

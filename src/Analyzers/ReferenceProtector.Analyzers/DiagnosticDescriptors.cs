@@ -27,4 +27,12 @@ internal static class Descriptors
         category: "Usage",
         defaultSeverity: DiagnosticSeverity.Info,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor ProjectReferenceViolation = new(
+        id: "RP0004",
+        title: "Project reference violation",
+        messageFormat: "Project reference '{0}' ==> '{1}' violates dependency rule '{2}' or one of its exceptions",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
 }

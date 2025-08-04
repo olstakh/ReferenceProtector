@@ -28,4 +28,5 @@ public enum LinkType
 {
     Direct,
     Transitive,
+    DirectOrTransitive,
 }

@@ -12,20 +12,6 @@ internal static class ReferenceItemExtensions
         return $"{item.Source}\t{item.LinkType}\t{item.Target}";
     }
 
-    public static ReferenceItem FromFileLine(string line)
-    {
-        var parts = line.Split('\t');
-        if (parts.Length != 3)
-        {
-            throw new FormatException($"Invalid reference item format: {line}");
-        }
-
-        return new ReferenceItem(
-            Source: parts[0],
-            LinkType: (ReferenceKind)Enum.Parse(typeof(ReferenceKind), parts[1]),
-            Target: parts[2]);
-    }
-
     public static void SaveToFile(this List<ReferenceItem> items, string outputFile)
     {
         File.WriteAllLines(outputFile, items.Select(item => item.ToFileLine()));
@@ -39,7 +25,7 @@ internal static class ReferenceItemExtensions
         }
 
         var lines = File.ReadAllLines(inputFile);
-        var items = lines.Select(line => FromFileLine(line));
+        var items = lines.Select(line => ReferenceItem.FromLine(line));
 
         return items.ToList();
     }
