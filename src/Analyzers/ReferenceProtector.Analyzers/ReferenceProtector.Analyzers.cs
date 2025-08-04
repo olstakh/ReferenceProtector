@@ -18,8 +18,6 @@ using ReferenceProtector.Analyzers.Models;
 public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
 {
     // TODO: Make it configurable via MSBuild properties or options
-    internal const string DependencyRulesFile = "DependencyRules.json";
-
     internal const string DeclaredReferencesFile = "references.tsv";
 
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
@@ -81,7 +79,7 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
             context.ReportDiagnostic(Diagnostic.Create(
                 Descriptors.InvalidDependencyRulesFormat,
                 Location.None,
-                $"Invalid JSON format in {DependencyRulesFile}"));
+                $"Invalid JSON format in {dependencyRulesFileName}"));
             return;
         }
 
@@ -123,8 +121,6 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
             .Where(r => IsMatchByName(r.Source, projectPath));
 
         AnalyzeDeclaredReferences(context, declaredReferences.ToImmutableArray(), thisProjectDependencyRules.ToImmutableArray());
-
-        // Analyze the content of the dependency rules file
     }
 
     private void AnalyzeDeclaredReferences(
