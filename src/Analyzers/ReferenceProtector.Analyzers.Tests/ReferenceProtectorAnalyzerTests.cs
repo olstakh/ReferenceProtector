@@ -163,6 +163,7 @@ public class ReferenceProtectorAnalyzerTests
                 AnalyzerConfigFiles = { ("/.editorconfig", """
                     is_global=true
                     build_property.MSBuildProjectFullPath=TestProject.csproj
+                    build_property.DependencyRulesFile=DependencyRules.json
                     """) },
             },
             ReferenceAssemblies = ReferenceAssemblies.Net.Net90

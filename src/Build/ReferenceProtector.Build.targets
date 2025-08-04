@@ -21,6 +21,8 @@
       MSBuildProjectFile="$(MSBuildProjectFullPath)" />
 
     <ItemGroup>
+      <AdditionalFiles Include="$(_ReferenceProtectorDeclaredReferences)" Visible="false" Condition="Exists('$(_ReferenceProtectorDeclaredReferences)')" />
+      <AdditionalFiles Include="$(DependencyRulesFile)" Visible="false" Condition="Exists('$(DependencyRulesFile)')" />
       <FileWrites Include="$(_ReferenceProtectorDeclaredReferences)" />
     </ItemGroup>
   </Target>

@@ -7,6 +7,7 @@ using System.Text.Json;
 
 namespace ReferenceProtector.Analyzers;
 
+using System.IO;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using DiagnosticDescriptors;
@@ -48,8 +49,14 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeDependencyRules(CompilationAnalysisContext context)
     {
+        if (!context.Options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue($"build_property.DependencyRulesFile", out var dependencyRulesFileName))
+        {
+            context.ReportDiagnostic(Diagnostic.Create(Descriptors.DependencyRulesNotProvided, Location.None));
+            return;
+        };
+
         var dependencyRulesFile = context.Options.AdditionalFiles
-            .FirstOrDefault(file => file.Path.EndsWith(DependencyRulesFile, StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(file => Path.GetFullPath(file.Path).Equals(Path.GetFullPath(dependencyRulesFileName), StringComparison.OrdinalIgnoreCase));
 
         var content = dependencyRulesFile?.GetText(context.CancellationToken)?.ToString();
 

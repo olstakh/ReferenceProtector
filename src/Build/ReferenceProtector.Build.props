@@ -4,4 +4,8 @@
   <PropertyGroup>
     <ReferenceProtectorTaskAssembly Condition="$(_ReferenceProtectorTaskAssembly) == ''">$(MSBuildThisFileDirectory)ReferenceProtector.Tasks.dll</ReferenceProtectorTaskAssembly>
   </PropertyGroup>
+  <ItemGroup>
+    <CompilerVisibleProperty Include="MSBuildProjectFullPath" />
+    <CompilerVisibleProperty Include="DependencyRulesFile" />
+  </ItemGroup>
 </Project>
