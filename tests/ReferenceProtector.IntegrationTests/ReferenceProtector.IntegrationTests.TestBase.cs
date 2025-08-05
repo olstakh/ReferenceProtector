@@ -71,21 +71,22 @@ public class TestBase : IDisposable
         return testDirectory;
     }
 
-    internal void CreateProject(string projectName)
+    internal string CreateProject(string projectName)
     {
-        var projectPath = Path.Combine(TestDirectory, projectName);
+        var projectFolder = Path.Combine(TestDirectory, projectName);
+        var projectFilePath = Path.Combine(projectFolder, $"{projectName}.csproj");
 
         // Ensure the project directory exists
         {
-            Output.WriteLine($"Creating project directory: {projectPath}");
-            Directory.CreateDirectory(projectPath);
+            Output.WriteLine($"Creating project directory: {projectFolder}");
+            Directory.CreateDirectory(projectFolder);
         }
 
         // Create the project file
         {
-            Output.WriteLine($"Creating project: {projectName}.cs at {projectPath}");
+            Output.WriteLine($"Creating project: {projectName}.cs at {projectFolder}");
 
-            File.WriteAllText(Path.Combine(projectPath, $"{projectName}.csproj"), """
+            File.WriteAllText(projectFilePath, """
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -103,7 +104,7 @@ public class TestBase : IDisposable
         {
             Output.WriteLine($"Creating Class.cs in project: {projectName}");
 
-            File.WriteAllText(Path.Combine(projectPath, $"Class.cs"), $@"
+            File.WriteAllText(Path.Combine(projectFolder, $"Class.cs"), $@"
 namespace {projectName};
 
 public class Class1
@@ -111,6 +112,8 @@ public class Class1
 }}
 ");
         }
+
+        return projectFilePath;
     }
 
     internal async Task AddProjectReference(string projectName, string referenceProjectName)

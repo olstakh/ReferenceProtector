@@ -77,23 +77,23 @@ bad json
     [Fact]
     public async Task PackageReference_DependencyRuleViolated_ProducesWarnings_Async()
     {
-        CreateProject("A");
-        CreateProject("B");
+        var projectA = CreateProject("A");
+        var projectB = CreateProject("B");
         await AddProjectReference("A", "B");
         var testRulesPath = Path.Combine(TestDirectory, "testRules.json");
-        File.WriteAllText(testRulesPath, """
+        File.WriteAllText(testRulesPath, $$"""
         {
             "ProjectDependencies": [
-                {
-                    "From": "*",
-                    "To": "B\\B.csproj",
-                    "LinkType": "Direct",
-                    "Policy": "Forbidden",
-                    "Description": "test rule",
-                }            
+            {
+                "From": "*",
+                "To": "{{projectB.Replace("\\", "\\\\")}}",
+                "LinkType": "Direct",
+                "Policy": "Forbidden",
+                "Description": "test rule"
+            }           
             ]
         }
-""");
+    """);
 
         var warnings = await Build(additionalArgs:
             $"/p:DependencyRulesFile={testRulesPath}");
@@ -101,7 +101,7 @@ bad json
         var warning = Assert.Single(warnings);
         Assert.Equal(new Warning()
         {
-            Message = $"RP0004: Project reference '{TestDirectory}\\A\\A.csproj' ==> '{TestDirectory}\\B\\B.csproj' violates dependency rule 'test rule' or one of its exceptions",
+            Message = $"RP0004: Project reference '{projectA}' ==> '{projectB}' violates dependency rule 'test rule' or one of its exceptions",
             Project = "A/A.csproj",
         }, warning);
     }
