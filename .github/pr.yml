@@ -1,0 +1,50 @@
+name: Build and Test
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Git Versioning requires a non-shallow clone
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+
+      - name: Restore
+        run: dotnet restore -bl:logs/restore.binlog
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore -bl:logs/build.binlog
+
+      - name: Test
+        run: dotnet test --configuration Release --no-build --logger trx --results-directory TestResults
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}
+          path: ./TestResults
+        if: ${{ always() }} # Always run this step even on failure
+
+      - name: Upload logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-${{ matrix.os }}
+          path: ./logs
+        if: ${{ always() }} # Always run this step even on failure
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-${{ matrix.os }}
+          path: ./artifacts
+        if: ${{ always() }} # Always run this step even on failure
