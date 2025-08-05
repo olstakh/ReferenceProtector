@@ -55,3 +55,6 @@ nunit-*.xml
 
 # Resulting reference files
 *.tsv
+
+# SARIF
+*.sarif

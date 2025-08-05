@@ -1,4 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Package\ReferenceProtector.Package.csproj" />
+  </ItemGroup>
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -17,19 +21,5 @@
     <PackageReference Include="xunit.v3.assert" />
     <PackageReference Include="xunit.v3.core" />
   </ItemGroup>
-
-  <!-- Exclude Manual folder from compilation -->
-    <ItemGroup>
-      <Compile Include="..\..\Shared\ReferenceModels.cs" />
-      <Compile Include="..\..\Shared\ReferenceItemExtensions.cs" />
-      <Content Include="..\..\Build\**">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </Content>
-    </ItemGroup>
-  <ItemGroup>
-  </ItemGroup>    
-    <ItemGroup>
-      <ProjectReference Include="..\ReferenceProtector.Tasks\ReferenceProtector.Tasks.csproj" />
-    </ItemGroup>
 
 </Project>

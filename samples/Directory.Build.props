@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DependencyRulesFile>$(MSBuildThisFileDirectory)DependencyRules.json</DependencyRulesFile>
-    <ErrorLog>example.sarif,version=2.1</ErrorLog>
+    <ErrorLog>buildResult.sarif,version=2.1</ErrorLog>
   </PropertyGroup>
 
 </Project>

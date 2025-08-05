@@ -1,0 +1,1 @@
+These are integration tests for the whole product. Unit / integration tests for individual components are located next to them in src folder
