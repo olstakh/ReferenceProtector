@@ -53,5 +53,5 @@ jobs:
         if: ${{ always() }} # Always run this step even on failure
 
       - name: Push NuGet package
-        run: dotnet nuget push artifacts\*.nupkg --api-key "${{ secrets.GITHUB_TOKEN }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+        run: dotnet nuget push artifacts\*.nupkg --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
         if: startsWith(github.ref, 'refs/tags/v')
