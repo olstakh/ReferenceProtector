@@ -1,7 +1,8 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using Xunit;
 
-namespace ReferenceProtector.Tasks.IntegrationTests;
+namespace ReferenceProtector.IntegrationTests;
 
 /// <summary>
 /// Base class for integration tests.
@@ -18,6 +19,13 @@ public class TestBase : IDisposable
     /// Temporary directory for on-the-fly generated test projects.
     /// </summary>
     protected string TestDirectory { get; }
+
+    private static readonly Regex WarningErrorRegex = new(
+        @".+: (warning|error) (?<message>.+) \[(?<project>.+)\]",
+        RegexOptions.Compiled | RegexOptions.ExplicitCapture); 
+
+    internal readonly record struct Warning(string Message, string Project, IEnumerable<string>? AltMessages = null);
+
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TestBase"/> class.
@@ -60,52 +68,34 @@ public class TestBase : IDisposable
 """);
         }
 
-        // Create the build props file
-        {
-            var buildPropsPath = Path.Combine(testDirectory, "Directory.Build.props");
-            Output.WriteLine($"Creating build props file: {buildPropsPath}");
-
-            File.WriteAllText(buildPropsPath, """
-<Project>
-  <Import Project="..\ReferenceProtector.props" />
-</Project>
-""");
-        }
-
-        // Create the build targets file
-        {
-            var buildTargetsPath = Path.Combine(testDirectory, "ReferenceProtector.Build.targets");
-            Output.WriteLine($"Creating build targets file: {buildTargetsPath}");
-
-            File.WriteAllText(Path.Combine(testDirectory, "Directory.Build.targets"), """
-<Project>
-  <Import Project="..\ReferenceProtector.targets" />
-</Project>
-""");
-        }
-
         return testDirectory;
     }
 
-    internal void CreateProject(string projectName)
+    internal string CreateProject(string projectName)
     {
-        var projectPath = Path.Combine(TestDirectory, projectName);
+        var projectFolder = Path.Combine(TestDirectory, projectName);
+        var projectFilePath = Path.Combine(projectFolder, $"{projectName}.csproj");
 
         // Ensure the project directory exists
         {
-            Output.WriteLine($"Creating project directory: {projectPath}");
-            Directory.CreateDirectory(projectPath);
+            Output.WriteLine($"Creating project directory: {projectFolder}");
+            Directory.CreateDirectory(projectFolder);
         }
 
         // Create the project file
         {
-            Output.WriteLine($"Creating project: {projectName}.cs at {projectPath}");
+            Output.WriteLine($"Creating project: {projectName}.cs at {projectFolder}");
 
-            File.WriteAllText(Path.Combine(projectPath, $"{projectName}.csproj"), """
+            File.WriteAllText(projectFilePath, """
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ReferenceProtector" VersionOverride="*-*" />
+  </ItemGroup>
 </Project>
 """);
         }
@@ -114,7 +104,7 @@ public class TestBase : IDisposable
         {
             Output.WriteLine($"Creating Class.cs in project: {projectName}");
 
-            File.WriteAllText(Path.Combine(projectPath, $"Class.cs"), $@"
+            File.WriteAllText(Path.Combine(projectFolder, $"Class.cs"), $@"
 namespace {projectName};
 
 public class Class1
@@ -122,6 +112,8 @@ public class Class1
 }}
 ");
         }
+
+        return projectFilePath;
     }
 
     internal async Task AddProjectReference(string projectName, string referenceProjectName)
@@ -129,25 +121,46 @@ public class Class1
         var projectPath = Path.Combine(TestDirectory, projectName, $"{projectName}.csproj");
         var referencePath = Path.Combine(TestDirectory, referenceProjectName, $"{referenceProjectName}.csproj");
 
-        await RunDotnetCommandAsync(TestDirectory, $"add {projectPath} reference {referencePath}", TestContext.Current.CancellationToken);
+        await RunDotnetCommandAsync(TestDirectory, $"add {projectPath} reference {referencePath}", TestContext.Current.CancellationToken);    
     }
 
-    internal async Task Build()
+    internal async Task<IReadOnlyList<Warning>> Build(string additionalArgs = "")
     {
+        string logDirBase = Path.Combine(TestDirectory, "Logs");
+        string binlogFilePath = Path.Combine(logDirBase, "build.binlog");
+        string warningsFilePath = Path.Combine(logDirBase, "build.warnings.log");
+        string errorsFilePath = Path.Combine(logDirBase, "build.errors.log");
+
         string buildArgs =
             $"build dirs.proj " +
             $"-m:1 -t:Rebuild -restore -nologo -nodeReuse:false -noAutoResponse " +
             $"/p:Configuration=Debug " +
-            $"/p:ReferenceProtectorTaskAssembly={Path.Combine(Directory.GetCurrentDirectory(), "ReferenceProtector.Tasks.dll")} " +
-            $"/v:m";
+            $"-bl:\"{binlogFilePath}\" " +
+            $"-flp1:logfile=\"{errorsFilePath}\";errorsonly " +
+            $"-flp2:logfile=\"{warningsFilePath}\";warningsonly " +
+            $"/v:m" +
+            $" {additionalArgs}";
 
         await RunDotnetCommandAsync(TestDirectory, buildArgs, TestContext.Current.CancellationToken);
-    }
 
-    internal List<string> GetGeneratedReferencesFiles()
-    {
-        var files = Directory.GetFiles(TestDirectory, "references.tsv", SearchOption.AllDirectories);
-        return files.ToList();
+        List<Warning> actualWarnings = new();
+        foreach (string line in await File.ReadAllLinesAsync(warningsFilePath))
+        {
+            Match match = WarningErrorRegex.Match(line);
+            if (match.Success)
+            {
+                string message = match.Groups["message"].Value;
+                string projectFullPath = match.Groups["project"].Value;
+                string projectRelativePath = projectFullPath[(TestDirectory.Length + 1)..];
+
+                // Normalize slashes for the project paths
+                projectRelativePath = projectRelativePath.Replace('\\', '/');
+
+                actualWarnings.Add(new Warning(message, projectRelativePath));
+            }
+        }
+
+        return actualWarnings;
     }
 
     private async Task RunDotnetCommandAsync(string workingDirectory, string args, CancellationToken ct)
