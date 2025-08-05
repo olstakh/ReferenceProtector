@@ -21,7 +21,7 @@ public class ReferenceProtectorAnalyzerTests
         test.ExpectedDiagnostics.Add(
             DiagnosticResult.CompilerWarning("RP0001")
                 .WithNoLocation()
-                .WithMessage(""));
+                .WithMessage("Provide DependencyRulesFile property to specify valid dependency rules file. Current path: DependencyRules.json."));
 
         await test.RunAsync(TestContext.Current.CancellationToken);
     }
@@ -39,7 +39,7 @@ public class ReferenceProtectorAnalyzerTests
         test.ExpectedDiagnostics.Add(
             DiagnosticResult.CompilerWarning("RP0002")
                 .WithNoLocation()
-                .WithMessage(""));
+                .WithMessage("Make sure the dependency rules file 'DependencyRules.json' is in the correct json format"));
 
         await test.RunAsync(TestContext.Current.CancellationToken);
     }

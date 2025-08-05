@@ -9,7 +9,7 @@ internal static class Descriptors
     public static readonly DiagnosticDescriptor DependencyRulesNotProvided = new(
         id: "RP0001",
         title: "Provide dependency rules for analysis",
-        messageFormat: "",
+        messageFormat: "Provide DependencyRulesFile property to specify valid dependency rules file. Current path: {0}.",
         category: "Usage",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
@@ -17,7 +17,7 @@ internal static class Descriptors
     public static readonly DiagnosticDescriptor InvalidDependencyRulesFormat = new(
         id: "RP0002",
         title: "Invalid dependency rules format",
-        messageFormat: "",
+        messageFormat: "Make sure the dependency rules file '{0}' is in the correct json format",
         category: "Usage",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);

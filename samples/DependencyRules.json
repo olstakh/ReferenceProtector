@@ -1,0 +1,31 @@
+{
+    "ProjectDependencies": [
+    {
+        "From": "*\\ClassA.csproj",
+        "To": "*\\ClassB.csproj",
+        "Description": "Can't reference this project directly",
+        "Policy": "Forbidden",
+        "LinkType": "Direct",
+        "Exceptions": [
+            {
+                "From": "*\\ClassA.csproj",
+                "To": "*\\ClassB.csproj",
+                "Justification": "This is an exception for testing purposes"
+            }
+        ]
+    },
+    {
+        "From": "*\\ClassA.csproj",
+        "To": "*\\ClassC.csproj",
+        "Description": "Can't reference this project transitively",
+        "Policy": "Forbidden",
+        "LinkType": "Transitive",
+        "Exceptions": [
+            {
+                "From": "*\\ClassA.csproj",
+                "To": "*\\ClassC.csproj",
+                "Justification": "This is an exception for testing purposes"
+            }
+        ]
+    }]
+}

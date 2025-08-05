@@ -53,11 +53,11 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeDependencyRules(CompilationAnalysisContext context)
     {
-        if (!context.Options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue($"build_property.DependencyRulesFile", out var dependencyRulesFileName))
+        if (!context.Options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue($"build_property.DependencyRulesFile", out var dependencyRulesFileName) || string.IsNullOrEmpty(dependencyRulesFileName))
         {
-            context.ReportDiagnostic(Diagnostic.Create(Descriptors.DependencyRulesNotProvided, Location.None));
+            context.ReportDiagnostic(Diagnostic.Create(Descriptors.DependencyRulesNotProvided, Location.None, "N/A"));
             return;
-        };
+        }
 
         var dependencyRulesFile = context.Options.AdditionalFiles
             .FirstOrDefault(file => Path.GetFullPath(file.Path).Equals(Path.GetFullPath(dependencyRulesFileName), StringComparison.OrdinalIgnoreCase));
@@ -66,7 +66,10 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
 
         if (content == null)
         {
-            context.ReportDiagnostic(Diagnostic.Create(Descriptors.DependencyRulesNotProvided, Location.None));
+            context.ReportDiagnostic(Diagnostic.Create(Descriptors.DependencyRulesNotProvided, Location.None, properties: new Dictionary<string, string?>()
+            {
+            }.ToImmutableDictionary(),
+            messageArgs: dependencyRulesFileName));
             return;
         }
 
@@ -85,7 +88,7 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
             context.ReportDiagnostic(Diagnostic.Create(
                 Descriptors.InvalidDependencyRulesFormat,
                 Location.None,
-                $"Invalid JSON format in {dependencyRulesFileName}"));
+                dependencyRulesFileName));
             return;
         }
 
@@ -123,6 +126,7 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
         }
 
         var declaredReferences = declaredReferencesContent
+            .Where(line => !string.IsNullOrWhiteSpace(line.ToString()))
             .Select(line => ReferenceItem.FromLine(line.ToString()))
             .Where(r => IsMatchByName(r.Source, projectPath));
 

@@ -27,7 +27,7 @@
       <Pack>true</Pack>
       <PackagePath>build</PackagePath>
     </Content>
-    <Content Include="..\Build\*">
+    <Content Include="..\BuildMultiTargeting\*">
       <Pack>true</Pack>
       <PackagePath>buildMultiTargeting</PackagePath>
     </Content>
