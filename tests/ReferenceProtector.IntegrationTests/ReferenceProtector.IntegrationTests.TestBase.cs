@@ -124,6 +124,11 @@ public class Class1
         await RunDotnetCommandAsync(TestDirectory, $"add {projectPath} reference {referencePath}", TestContext.Current.CancellationToken);    
     }
 
+    internal async Task ListPackages(string projectPath)
+    {
+        await RunDotnetCommandAsync(TestDirectory, $"dotnet list {projectPath} package", TestContext.Current.CancellationToken);
+    }
+
     internal async Task<IReadOnlyList<Warning>> Build(string additionalArgs = "")
     {
         string logDirBase = Path.Combine(TestDirectory, "Logs");
