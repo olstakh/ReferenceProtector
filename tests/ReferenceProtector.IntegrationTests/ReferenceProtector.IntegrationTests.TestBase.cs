@@ -131,9 +131,11 @@ public class Class1
         string warningsFilePath = Path.Combine(logDirBase, "build.warnings.log");
         string errorsFilePath = Path.Combine(logDirBase, "build.errors.log");
 
+        await RunDotnetCommandAsync(TestDirectory, "restore dirs.proj -f", TestContext.Current.CancellationToken);
+
         string buildArgs =
             $"build dirs.proj " +
-            $"-m:1 -t:Rebuild -restore -nologo -nodeReuse:false -noAutoResponse " +
+            $"-m:1 -t:Rebuild -nologo -nodeReuse:false -noAutoResponse " +
             $"/p:Configuration=Debug " +
             $"-bl:\"{binlogFilePath}\" " +
             $"-flp1:logfile=\"{errorsFilePath}\";errorsonly " +
