@@ -110,3 +110,6 @@ Below are few examples of potential rules
 
 ## How it works
 First - MSBuild task with gather all direct / indirect project references and dump them into a file (typically in `obj/Debug/` folder), named `references.tsv`. During the second stage - Roslyn analyzer will read this file and match it against the dependency rules, defined in a file from `<DependencyRulesFile>` property. Corresponding diagnostics will be produced if violations are found.
+
+## How to disable
+Easiest way is to set `EnableReferenceProtector` variable to false (either in command line or in a project file, like `<EnableReferenceProtector>false</EnableReferenceProtector>`)
