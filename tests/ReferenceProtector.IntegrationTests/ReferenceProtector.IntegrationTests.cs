@@ -98,8 +98,6 @@ bad json
         var warnings = await Build(additionalArgs:
             $"/p:DependencyRulesFile={testRulesPath}");
 
-        await ListPackages(projectA);
-
         var warning = Assert.Single(warnings);
         Assert.Equal(new Warning()
         {

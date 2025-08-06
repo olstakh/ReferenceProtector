@@ -68,6 +68,21 @@ public class TestBase : IDisposable
 """);
         }
 
+        // Create the build props file
+        {
+            var buildPropsPath = Path.Combine(testDirectory, "Directory.Build.props");
+            Output.WriteLine($"Creating build props file: {buildPropsPath}");
+
+            File.WriteAllText(buildPropsPath, """
+<Project>
+  <ItemGroup>
+    <PackageReference Include="ReferenceProtector" VersionOverride="*-*" />
+  </ItemGroup>
+</Project>
+
+""");
+        }        
+
         return testDirectory;
     }
 
@@ -92,10 +107,6 @@ public class TestBase : IDisposable
     <TargetFramework>net9.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="ReferenceProtector" VersionOverride="*-*" />
-  </ItemGroup>
 </Project>
 """);
         }
@@ -124,11 +135,6 @@ public class Class1
         await RunDotnetCommandAsync(TestDirectory, $"add {projectPath} reference {referencePath}", TestContext.Current.CancellationToken);    
     }
 
-    internal async Task ListPackages(string projectPath)
-    {
-        await RunDotnetCommandAsync(TestDirectory, $"dotnet list {projectPath} package", TestContext.Current.CancellationToken);
-    }
-
     internal async Task<IReadOnlyList<Warning>> Build(string additionalArgs = "")
     {
         string logDirBase = Path.Combine(TestDirectory, "Logs");
@@ -137,6 +143,7 @@ public class Class1
         string errorsFilePath = Path.Combine(logDirBase, "build.errors.log");
 
         await RunDotnetCommandAsync(TestDirectory, "restore dirs.proj -f", TestContext.Current.CancellationToken);
+        await RunDotnetCommandAsync(TestDirectory, $"dotnet list dirs.proj package", TestContext.Current.CancellationToken);
 
         string buildArgs =
             $"build dirs.proj " +
