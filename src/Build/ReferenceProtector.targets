@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <UsingTask TaskName="CollectAllReferences" AssemblyFile="$(ReferenceProtectorTaskAssembly)" />
+  <UsingTask TaskName="CollectAllReferences" AssemblyFile="$(ReferenceProtectorTaskAssembly)" Condition="'$(EnableReferenceProtector)' != 'false'" />
 
   <PropertyGroup>
     <CoreCompileDependsOn>$(CoreCompileDependsOn);CollectDeclaredReferences</CoreCompileDependsOn>
   </PropertyGroup>
 
-  <Target Name="CollectDeclaredReferences" DependsOnTargets="ResolveAssemblyReferences;PrepareProjectReferences">
+  <Target Name="CollectDeclaredReferences" DependsOnTargets="ResolveAssemblyReferences;PrepareProjectReferences" Condition="'$(EnableReferenceProtector)' != 'false'">
     <PropertyGroup>
       <_ReferenceProtectorDeclaredReferences Condition="$(_ReferenceProtectorDeclaredReferences) == ''">$(IntermediateOutputPath)\references.tsv</_ReferenceProtectorDeclaredReferences>
     </PropertyGroup>

@@ -186,6 +186,7 @@ public class ReferenceProtectorAnalyzerTests
                     is_global=true
                     build_property.MSBuildProjectFullPath=TestProject.csproj
                     build_property.DependencyRulesFile=DependencyRules.json
+                    build_property.EnableReferenceProtector=true
                     """) },
             },
             ReferenceAssemblies = ReferenceAssemblies.Net.Net90

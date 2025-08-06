@@ -53,7 +53,15 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
 
     private void AnalyzeDependencyRules(CompilationAnalysisContext context)
     {
-        if (!context.Options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue($"build_property.DependencyRulesFile", out var dependencyRulesFileName) || string.IsNullOrEmpty(dependencyRulesFileName))
+        if (!context.Options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue($"build_property.EnableReferenceProtector", out var enableReferenceProtector) ||
+            enableReferenceProtector.ToLower() != "true")
+        {
+            // The feature is disabled, no need to analyze
+            return;
+        }
+
+        if (!context.Options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue($"build_property.DependencyRulesFile", out var dependencyRulesFileName) ||
+            string.IsNullOrWhiteSpace(dependencyRulesFileName))
         {
             context.ReportDiagnostic(Diagnostic.Create(Descriptors.DependencyRulesNotProvided, Location.None, "N/A"));
             return;
