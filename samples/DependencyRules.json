@@ -21,11 +21,6 @@
         "Policy": "Forbidden",
         "LinkType": "Transitive",
         "Exceptions": [
-            {
-                "From": "*\\ClassA.csproj",
-                "To": "*\\ClassC.csproj",
-                "Justification": "This is an exception for testing purposes"
-            }
         ]
     }]
 }

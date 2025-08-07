@@ -105,4 +105,34 @@ bad json
             Project = "A/A.csproj",
         }, warning);
     }
+
+    /// <summary>
+    /// Validates that dependency policy violation will not produce a build warning when the feature is disabled.
+    /// </summary>
+    [Fact]
+    public async Task PackageReference_DependencyRuleViolated_FeatureDisabled_NoWarnings_Async()
+    {
+        var projectA = CreateProject("A");
+        var projectB = CreateProject("B");
+        await AddProjectReference("A", "B");
+        var testRulesPath = Path.Combine(TestDirectory, "testRules.json");
+        File.WriteAllText(testRulesPath, $$"""
+        {
+            "ProjectDependencies": [
+            {
+                "From": "*",
+                "To": "{{projectB.Replace("\\", "\\\\")}}",
+                "LinkType": "Direct",
+                "Policy": "Forbidden",
+                "Description": "test rule"
+            }           
+            ]
+        }
+    """);
+
+        var warnings = await Build(additionalArgs:
+            $"/p:DependencyRulesFile={testRulesPath} /p:EnableReferenceProtector=false");
+
+        Assert.Empty(warnings);
+    }
 }

@@ -2,10 +2,12 @@
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">  
   <PropertyGroup>
-    <ReferenceProtectorTaskAssembly Condition="$(_ReferenceProtectorTaskAssembly) == ''">$(MSBuildThisFileDirectory)ReferenceProtector.Tasks.dll</ReferenceProtectorTaskAssembly>
+    <EnableReferenceProtector Condition="'$(EnableReferenceProtector)' == ''">true</EnableReferenceProtector>
+    <ReferenceProtectorTaskAssembly Condition="$(EnableReferenceProtector) != 'false'">$(MSBuildThisFileDirectory)ReferenceProtector.Tasks.dll</ReferenceProtectorTaskAssembly>
   </PropertyGroup>
   <ItemGroup>
     <CompilerVisibleProperty Include="MSBuildProjectFullPath" />
     <CompilerVisibleProperty Include="DependencyRulesFile" />
+    <CompilerVisibleProperty Include="EnableReferenceProtector" />
   </ItemGroup>
 </Project>

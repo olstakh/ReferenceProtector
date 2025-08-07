@@ -132,14 +132,15 @@ public class Class1
         await RunDotnetCommandAsync(TestDirectory, $"add {projectPath} reference {referencePath}", TestContext.Current.CancellationToken);
     }
 
-    internal async Task Build()
+    internal async Task Build(string additionalArgs = "")
     {
         string buildArgs =
             $"build dirs.proj " +
             $"-m:1 -t:Rebuild -restore -nologo -nodeReuse:false -noAutoResponse " +
             $"/p:Configuration=Debug " +
             $"/p:ReferenceProtectorTaskAssembly={Path.Combine(Directory.GetCurrentDirectory(), "ReferenceProtector.Tasks.dll")} " +
-            $"/v:m";
+            $"/v:m" +
+            $" {additionalArgs}";
 
         await RunDotnetCommandAsync(TestDirectory, buildArgs, TestContext.Current.CancellationToken);
     }

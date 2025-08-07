@@ -39,6 +39,21 @@ public class CollectAllReferencesIntegrationTests : TestBase
     }
 
     /// <summary>
+    /// Verifies that the CollectAllReferences task does not generate files when the feature is disabled.
+    /// </summary>
+    [Fact]
+    public async Task CollectAllReferences_FeatureDisabled_NoFilesGenerated_Async()
+    {
+        CreateProject("A");
+        CreateProject("B");
+        CreateProject("C");
+        await Build(additionalArgs: "/p:EnableReferenceProtector=false");
+
+        var generatedFiles = GetGeneratedReferencesFiles();
+        Assert.Empty(generatedFiles);
+    }
+
+    /// <summary>
     /// Verifies that the CollectAllReferences task correctly collects all project references and their links.
     /// </summary>
     [Fact]
