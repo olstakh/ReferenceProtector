@@ -1,4 +1,9 @@
 # ReferenceProtector
+
+# ReferenceTrimmer
+[![NuGet Version](https://img.shields.io/nuget/v/ReferenceProtector.svg)](https://www.nuget.org/packages/ReferenceProtector)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/ReferenceProtector.svg)](https://www.nuget.org/packages/ReferenceProtector)
+
 Protect from unwanted dependencies in your repository. As repo gets bigger - there's often a need to secure from bad dependencies between projects.
 
 ## Rules

@@ -72,7 +72,7 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
 
         var content = dependencyRulesFile?.GetText(context.CancellationToken)?.ToString();
 
-        if (content == null)
+        if (content == null || dependencyRulesFile == null)
         {
             context.ReportDiagnostic(Diagnostic.Create(Descriptors.DependencyRulesNotProvided, Location.None, properties: new Dictionary<string, string?>()
             {
@@ -87,8 +87,17 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
         {
             rules = JsonSerializer.Deserialize<DependencyRules>(content, s_jsonSerializerOptions);
         }
-        catch (JsonException)
+        catch (JsonException ex)
         {
+            context.ReportDiagnostic(Diagnostic.Create(
+                Descriptors.InvalidDependencyRulesFormat,
+                Location.None,
+                properties: new Dictionary<string, string?>()
+                {
+                    { "Error", ex.Message }
+                }.ToImmutableDictionary(),
+                dependencyRulesFile.Path));
+            return;            
         }
 
         if (rules == null)
@@ -96,7 +105,7 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
             context.ReportDiagnostic(Diagnostic.Create(
                 Descriptors.InvalidDependencyRulesFormat,
                 Location.None,
-                dependencyRulesFileName));
+                dependencyRulesFile.Path));
             return;
         }
 
