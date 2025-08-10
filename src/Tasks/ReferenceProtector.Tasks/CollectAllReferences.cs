@@ -46,7 +46,14 @@ public class CollectAllReferences : Microsoft.Build.Utilities.Task
         foreach (var projectReference in ProjectReferences)
         {
             var projectReferenceAssemblyPath = Path.GetFullPath(projectReference.ItemSpec);
-            var referenceProjectFile = projectReference.GetMetadata("OriginalProjectReferenceItemSpec");
+
+            // Check for OutputType metadata
+            var outputType = projectReference.GetMetadata("OutputItemType");
+            if (string.Equals(outputType, "Analyzer", StringComparison.OrdinalIgnoreCase))
+            {
+                // Skip analyzers
+                continue;
+            }
 
             // Weirdly, NuGet restore is actually how transitive project references are determined and they're
             // added to to project.assets.json and collected via the IncludeTransitiveProjectReferences target.

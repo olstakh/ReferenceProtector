@@ -33,7 +33,7 @@ internal static class Descriptors
     public static readonly DiagnosticDescriptor ProjectReferenceViolation = new(
         id: "RP0004",
         title: "Project reference violation",
-        messageFormat: "Project reference '{0}' ==> '{1}' violates dependency rule '{2}' or one of its exceptions",
+        messageFormat: "Project reference '{0}' ==> '{1}' violates dependency rule '{2}' or one of its exceptions. Please remove the dependency or update '{3}' file to allow it.",
         category: "Usage",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);

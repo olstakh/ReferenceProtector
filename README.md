@@ -1,6 +1,5 @@
 # ReferenceProtector
 
-# ReferenceTrimmer
 [![NuGet Version](https://img.shields.io/nuget/v/ReferenceProtector.svg)](https://www.nuget.org/packages/ReferenceProtector)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/ReferenceProtector.svg)](https://www.nuget.org/packages/ReferenceProtector)
 
