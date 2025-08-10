@@ -147,13 +147,14 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
             .Select(line => ReferenceItem.FromLine(line.ToString()))
             .Where(r => IsMatchByName(r.Source, projectPath));
 
-        AnalyzeDeclaredReferences(context, declaredReferences.ToImmutableArray(), thisProjectDependencyRules.ToImmutableArray());
+        AnalyzeDeclaredReferences(context, declaredReferences.ToImmutableArray(), thisProjectDependencyRules.ToImmutableArray(), dependencyRulesFile.Path);
     }
 
     private void AnalyzeDeclaredReferences(
         CompilationAnalysisContext context,
         ImmutableArray<ReferenceItem> declaredReferences,
-        ImmutableArray<ProjectDependency> dependencyRules)
+        ImmutableArray<ProjectDependency> dependencyRules,
+        string dependencyRulesFile)
     {
         foreach (var reference in declaredReferences)
         {
@@ -185,7 +186,8 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
                         Location.None,
                         reference.Source,
                         reference.Target,
-                        rule.Description));
+                        rule.Description,
+                        dependencyRulesFile));
                 }
             }
         }

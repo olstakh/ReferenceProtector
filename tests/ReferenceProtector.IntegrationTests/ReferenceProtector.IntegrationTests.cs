@@ -101,7 +101,7 @@ bad json
         var warning = Assert.Single(warnings);
         Assert.Equal(new Warning()
         {
-            Message = $"RP0004: Project reference '{projectA}' ==> '{projectB}' violates dependency rule 'test rule' or one of its exceptions",
+            Message = $"RP0004: Project reference '{projectA}' ==> '{projectB}' violates dependency rule 'test rule' or one of its exceptions. Please remove the dependency or update '{testRulesPath}' file to allow it.",
             Project = "A/A.csproj",
         }, warning);
     }

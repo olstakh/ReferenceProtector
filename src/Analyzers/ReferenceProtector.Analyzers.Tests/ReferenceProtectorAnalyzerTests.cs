@@ -98,11 +98,11 @@ public class ReferenceProtectorAnalyzerTests
 
         test.ExpectedDiagnostics.Add(DiagnosticResult.CompilerWarning("RP0004")
             .WithNoLocation()
-            .WithMessage("Project reference 'TestProject.csproj' ==> 'ReferencedProject.csproj' violates dependency rule 'Can't reference this project directly' or one of its exceptions"));
+            .WithMessage("Project reference 'TestProject.csproj' ==> 'ReferencedProject.csproj' violates dependency rule 'Can't reference this project directly' or one of its exceptions. Please remove the dependency or update 'DependencyRules.json' file to allow it."));
 
         test.ExpectedDiagnostics.Add(DiagnosticResult.CompilerWarning("RP0004")
             .WithNoLocation()
-            .WithMessage("Project reference 'TestProject.csproj' ==> 'TransitiveReferencedProject.csproj' violates dependency rule 'Can't reference this project transitively' or one of its exceptions"));
+            .WithMessage("Project reference 'TestProject.csproj' ==> 'TransitiveReferencedProject.csproj' violates dependency rule 'Can't reference this project transitively' or one of its exceptions. Please remove the dependency or update 'DependencyRules.json' file to allow it."));
 
         await test.RunAsync(TestContext.Current.CancellationToken);
     }
