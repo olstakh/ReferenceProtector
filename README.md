@@ -1,7 +1,7 @@
 # ReferenceProtector
 
 [![NuGet Version](https://img.shields.io/nuget/v/ReferenceProtector.svg)](https://www.nuget.org/packages/ReferenceProtector)
-[![NuGet Downloads](https://img.shields.io/nuget/dt/ReferenceProtector.svg)](https://www.nuget.org/packages/ReferenceProtector)
+[![GitHub license](https://img.shields.io/github/license/olstakh/ReferenceProtector.svg)](https://github.com/olstakh/ReferenceProtector/blob/main/LICENSE)
 
 Protect from unwanted dependencies in your repository. As repo gets bigger - there's often a need to secure from bad dependencies between projects.
 
@@ -68,6 +68,11 @@ The decision logic is as follows
 
 Violations of the rule will produce `RT0004` warning during build.
 
+Note: in regex matches - `*` is substituted with `.*` for proper regex, and `$` is added at the end.
+```
+Regex.Escape(pattern).Replace("\\*", ".*") + "$";
+```
+
 ## Examples
 
 Below are few examples of potential rules
@@ -113,7 +118,7 @@ Below are few examples of potential rules
 ```
 
 ## How it works
-First - MSBuild task with gather all direct / indirect project references and dump them into a file (typically in `obj/Debug/` folder), named `references.tsv`. During the second stage - Roslyn analyzer will read this file and match it against the dependency rules, defined in a file from `<DependencyRulesFile>` property. Corresponding diagnostics will be produced if violations are found.
+First - MSBuild task with gather all direct / indirect project references and dump them into a file (typically in `obj/Debug/` folder), named `references.tsv` (inspired by [ReferenceTrimmer](https://github.com/dfederm/ReferenceTrimmer) implementation). During the second stage - Roslyn analyzer will read this file and match it against the dependency rules, defined in a file from `<DependencyRulesFile>` property. Corresponding diagnostics will be produced if violations are found.
 
 ## How to disable
 Easiest way is to set `EnableReferenceProtector` variable to false (either in command line or in a project file, like `<EnableReferenceProtector>false</EnableReferenceProtector>`)
