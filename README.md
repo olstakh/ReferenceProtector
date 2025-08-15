@@ -68,6 +68,11 @@ The decision logic is as follows
 
 Violations of the rule will produce `RT0004` warning during build.
 
+Note: in regex matches - `*` is substituted with `.*` for proper regex, and `$` is added at the end.
+```
+Regex.Escape(pattern).Replace("\\*", ".*") + "$";
+```
+
 ## Examples
 
 Below are few examples of potential rules
