@@ -4,10 +4,10 @@
   <UsingTask TaskName="CollectAllReferences" AssemblyFile="$(ReferenceProtectorTaskAssembly)" Condition="'$(EnableReferenceProtector)' != 'false'" />
 
   <PropertyGroup>
-    <CoreCompileDependsOn>$(CoreCompileDependsOn);CollectDeclaredReferences</CoreCompileDependsOn>
+    <CoreCompileDependsOn>$(CoreCompileDependsOn);CollectDeclaredReferencesReferenceProtector</CoreCompileDependsOn>
   </PropertyGroup>
 
-  <Target Name="CollectDeclaredReferences" DependsOnTargets="ResolveAssemblyReferences;PrepareProjectReferences" Condition="'$(EnableReferenceProtector)' != 'false'">
+  <Target Name="CollectDeclaredReferencesReferenceProtector" DependsOnTargets="ResolveAssemblyReferences;PrepareProjectReferences" Condition="'$(EnableReferenceProtector)' != 'false'">
     <PropertyGroup>
       <_ReferenceProtectorDeclaredReferences Condition="$(_ReferenceProtectorDeclaredReferences) == ''">$(IntermediateOutputPath)\references.tsv</_ReferenceProtectorDeclaredReferences>
     </PropertyGroup>
