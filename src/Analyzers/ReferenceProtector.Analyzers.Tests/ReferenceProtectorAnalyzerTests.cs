@@ -91,7 +91,7 @@ public class ReferenceProtectorAnalyzerTests
             """));
 
         test.TestState.AdditionalFiles.Add(
-            ("references.tsv", """
+            (ReferenceProtectorAnalyzer.DeclaredReferencesFile, """
             TestProject.csproj	ProjectReferenceDirect	ReferencedProject.csproj
             TestProject.csproj	ProjectReferenceTransitive	TransitiveReferencedProject.csproj
             """));
@@ -142,7 +142,7 @@ public class ReferenceProtectorAnalyzerTests
             """));
 
         test.TestState.AdditionalFiles.Add(
-            ("references.tsv", """
+            (ReferenceProtectorAnalyzer.DeclaredReferencesFile, """
             TestProject.csproj	ProjectReferenceDirect	ReferencedProject.csproj
             TestProject.csproj	ProjectReferenceTransitive	TransitiveReferencedProject.csproj
             """));
