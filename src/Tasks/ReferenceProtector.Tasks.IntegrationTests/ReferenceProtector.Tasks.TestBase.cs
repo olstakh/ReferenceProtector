@@ -147,7 +147,7 @@ public class Class1
 
     internal List<string> GetGeneratedReferencesFiles()
     {
-        var files = Directory.GetFiles(TestDirectory, "references.tsv", SearchOption.AllDirectories);
+        var files = Directory.GetFiles(TestDirectory, "_ReferenceProtector_DeclaredReferences.tsv", SearchOption.AllDirectories);
         return files.ToList();
     }
 

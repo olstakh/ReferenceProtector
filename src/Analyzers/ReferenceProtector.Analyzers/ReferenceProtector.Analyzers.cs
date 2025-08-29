@@ -22,7 +22,7 @@ using ReferenceProtector.Analyzers.Models;
 public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
 {
     // TODO: Make it configurable via MSBuild properties or options
-    internal const string DeclaredReferencesFile = "references.tsv";
+    internal const string DeclaredReferencesFile = "_ReferenceProtector_DeclaredReferences.tsv";
 
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
