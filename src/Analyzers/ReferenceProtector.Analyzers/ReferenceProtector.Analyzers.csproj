@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
-    <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="System.Text.Json" PrivateAssets="all" GeneratePathProperty="true" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,6 +18,18 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="ReferenceProtector.Analyzers.Tests" />
-  </ItemGroup>  
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddAnalyzersToOutput</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+
+  <Target Name="_AddAnalyzersToOutput">
+    <Message Importance="High" Text="$(PkgSystem_Text_Json)\lib\netstandard2.0\System.Text.Json.dll" />
+
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(PkgSystem_Text_Json)\lib\netstandard2.0\System.Text.Json.dll" PackagePath="analyzers/dotnet/cs" />
+    </ItemGroup>
+  </Target>  
 
 </Project>
