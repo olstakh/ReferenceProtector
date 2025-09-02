@@ -20,16 +20,14 @@
     <InternalsVisibleTo Include="ReferenceProtector.Analyzers.Tests" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddAnalyzersToOutput</TargetsForTfmSpecificContentInPackage>
-  </PropertyGroup>
-
-  <Target Name="_AddAnalyzersToOutput">
-    <Message Importance="High" Text="$(PkgSystem_Text_Json)\lib\netstandard2.0\System.Text.Json.dll" />
-
+  <Target Name="CopyDependenciesToOutput" AfterTargets="Build">
     <ItemGroup>
-      <TfmSpecificPackageFile Include="$(PkgSystem_Text_Json)\lib\netstandard2.0\System.Text.Json.dll" PackagePath="analyzers/dotnet/cs" />
+      <SystemTextJsonDlls Include="$(PkgSystem_Text_Json)\lib\netstandard2.0\System.Text.Json.dll" />
     </ItemGroup>
-  </Target>  
-
+    <Copy
+      SourceFiles="@(SystemTextJsonDlls)"
+      DestinationFolder="$(OutputPath)"
+      SkipUnchangedFiles="true"
+      Condition="Exists('%(SystemTextJsonDlls.FullPath)')" />
+  </Target>
 </Project>
