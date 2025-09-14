@@ -18,6 +18,7 @@
     <CollectAllReferences
       OutputFile="$(_ReferenceProtectorDeclaredReferences)"
       ProjectReferences="@(ProjectReference)"
+      PackageReferences="@(PackageReference)"
       MSBuildProjectFile="$(MSBuildProjectFullPath)" />
 
     <ItemGroup>

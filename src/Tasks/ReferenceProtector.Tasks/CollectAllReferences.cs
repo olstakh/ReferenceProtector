@@ -33,6 +33,11 @@ public class CollectAllReferences : Microsoft.Build.Utilities.Task
     /// </summary>
     public ITaskItem[] ProjectReferences { get; set; } = [];
 
+    /// <summary>
+    /// The package references to collect.
+    /// </summary>
+    public ITaskItem[] PackageReferences { get; set; } = [];
+
     /// <inheritdoc />
     public override bool Execute()
     {
@@ -64,6 +69,15 @@ public class CollectAllReferences : Microsoft.Build.Utilities.Task
                 Source: MsBuildProjectFile,
                 Target: projectReferenceAssemblyPath,
                 LinkType: isTransitiveDependency ? ReferenceKind.ProjectReferenceTransitive : ReferenceKind.ProjectReferenceDirect));
+        }
+
+        foreach (var packageReference in PackageReferences)
+        {
+            var packageReferenceName = packageReference.ItemSpec;
+            references.Add(new ReferenceItem(
+                Source: MsBuildProjectFile,
+                Target: packageReferenceName,
+                LinkType: ReferenceKind.PackageReferenceDirect));
         }
 
         if (OutputFile is not null)
