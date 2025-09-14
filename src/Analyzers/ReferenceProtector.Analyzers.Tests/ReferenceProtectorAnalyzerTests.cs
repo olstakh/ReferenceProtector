@@ -58,6 +58,9 @@ public class ReferenceProtectorAnalyzerTests
             .WithNoLocation()
             .WithMessage("No dependency rules matched the current project 'TestProject.csproj'"));
 
+        test.TestState.AdditionalFiles.Add(
+            (ReferenceProtectorAnalyzer.DeclaredReferencesFile, ""));            
+
         await test.RunAsync(TestContext.Current.CancellationToken);
     }
 

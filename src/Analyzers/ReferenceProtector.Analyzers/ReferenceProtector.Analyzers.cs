@@ -41,7 +41,9 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
         Descriptors.DependencyRulesNotProvided,
         Descriptors.InvalidDependencyRulesFormat,
         Descriptors.NoDependencyRulesMatchedCurrentProject,
-        Descriptors.ProjectReferenceViolation];
+        Descriptors.ProjectReferenceViolation,
+        Descriptors.PackageReferenceViolation
+    ];
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -97,7 +99,7 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
                     { "Error", ex.Message }
                 }.ToImmutableDictionary(),
                 dependencyRulesFile.Path));
-            return;            
+            return;
         }
 
         if (rules == null)
@@ -111,19 +113,6 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
 
         if (!context.Options.AnalyzerConfigOptionsProvider.GlobalOptions.TryGetValue($"build_property.MSBuildProjectFullPath", out var projectPath))
         {
-            return;
-        }
-
-        var thisProjectDependencyRules = (rules.ProjectDependencies ?? [])
-            .Where(pd => IsMatchByName(pd.From, projectPath))
-            .ToList();
-
-        if (thisProjectDependencyRules.Count == 0)
-        {
-            context.ReportDiagnostic(Diagnostic.Create(
-                Descriptors.NoDependencyRulesMatchedCurrentProject,
-                Location.None,
-                projectPath));
             return;
         }
 
@@ -147,13 +136,41 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
             .Select(line => ReferenceItem.FromLine(line.ToString()))
             .Where(r => IsMatchByName(r.Source, projectPath));
 
-        AnalyzeDeclaredReferences(context, declaredReferences.ToImmutableArray(), thisProjectDependencyRules.ToImmutableArray(), dependencyRulesFile.Path);
+        // Analyze project dependencies
+        {
+            var thisProjectDependencyRules = (rules.ProjectDependencies ?? [])
+                .Where(pd => IsMatchByName(pd.From, projectPath))
+                .ToList();
+
+            if (thisProjectDependencyRules.Count == 0)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    Descriptors.NoDependencyRulesMatchedCurrentProject,
+                    Location.None,
+                    projectPath));
+            }
+
+            AnalyzeDeclaredProjectReferences(context, declaredReferences.ToImmutableArray(), thisProjectDependencyRules.ToImmutableArray(), Descriptors.ProjectReferenceViolation, dependencyRulesFile.Path);
+        }
+        
+        // Analyze package dependencies
+        {
+            var thisPackageDependencyRules = (rules.PackageDependencies ?? [])
+                .Where(pd => IsMatchByName(pd.From, projectPath))
+                .ToList();
+
+            var packageReferences = declaredReferences
+                .Where(r => r.LinkType == ReferenceKind.PackageReferenceDirect);
+
+            AnalyzeDeclaredPackageReferences(context, packageReferences.ToImmutableArray(), thisPackageDependencyRules.ToImmutableArray(), Descriptors.PackageReferenceViolation, dependencyRulesFile.Path);
+        }
     }
 
-    private void AnalyzeDeclaredReferences(
+    private void AnalyzeDeclaredProjectReferences(
         CompilationAnalysisContext context,
         ImmutableArray<ReferenceItem> declaredReferences,
         ImmutableArray<ProjectDependency> dependencyRules,
+        DiagnosticDescriptor descriptor,
         string dependencyRulesFile)
     {
         foreach (var reference in declaredReferences)
@@ -182,7 +199,7 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
                 if (!referenceValid)
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
-                        Descriptors.ProjectReferenceViolation,
+                        descriptor,
                         Location.None,
                         reference.Source,
                         reference.Target,
@@ -192,7 +209,49 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
             }
         }
     }
-    
+
+    private void AnalyzeDeclaredPackageReferences(
+        CompilationAnalysisContext context,
+        ImmutableArray<ReferenceItem> declaredReferences,
+        ImmutableArray<PackageDependency> dependencyRules,
+        DiagnosticDescriptor descriptor,
+        string dependencyRulesFile)
+    {
+        foreach (var reference in declaredReferences)
+        {
+            var matchingRules = dependencyRules
+                .Where(rule => IsMatchByName(rule.From, reference.Source) && IsMatchByName(rule.To, reference.Target))
+                .ToList();
+
+            // Process the matching rules
+            foreach (var rule in matchingRules)
+            {
+                // Apply the rule logic here
+                var anyExceptionsMatched = rule.Exceptions?.Any(exception =>
+                    IsMatchByName(exception.From, reference.Source) &&
+                    IsMatchByName(exception.To, reference.Target)) ?? false;
+
+                var referenceValid = rule.Policy switch
+                {
+                    Policy.Allowed when !anyExceptionsMatched => true,
+                    Policy.Forbidden when anyExceptionsMatched => true,
+                    _ => false
+                };
+
+                if (!referenceValid)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        descriptor,
+                        Location.None,
+                        reference.Source,
+                        reference.Target,
+                        rule.Description,
+                        dependencyRulesFile));
+                }
+            }
+        }
+    }    
+
     private static bool IsMatchByName(string pattern, string project)
     {
         var regex = Regex.Escape(pattern).Replace("\\*", ".*") + "$";
