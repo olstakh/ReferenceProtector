@@ -135,6 +135,13 @@ public class Class1
         await RunDotnetCommandAsync(TestDirectory, $"add {projectPath} reference {referencePath}", TestContext.Current.CancellationToken);    
     }
 
+    internal async Task AddPackageReference(string projectName, string packageName)
+    {
+        var projectPath = Path.Combine(TestDirectory, projectName, $"{projectName}.csproj");
+
+        await RunDotnetCommandAsync(TestDirectory, $"add {projectPath} package {packageName}", TestContext.Current.CancellationToken);    
+    }
+
     internal async Task<IReadOnlyList<Warning>> Build(string additionalArgs = "")
     {
         string logDirBase = Path.Combine(TestDirectory, "Logs");
