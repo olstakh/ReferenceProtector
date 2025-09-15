@@ -37,4 +37,12 @@ internal static class Descriptors
         category: "Usage",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor PackageReferenceViolation = new(
+        id: "RP0005",
+        title: "Package reference violation",
+        messageFormat: "Package reference '{0}' ==> '{1}' violates dependency rule '{2}' or one of its exceptions. Please remove the dependency or update '{3}' file to allow it.",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
 }

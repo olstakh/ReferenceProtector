@@ -89,4 +89,41 @@ public class CollectAllReferencesIntegrationTests : TestBase
 
         Assert.Equal(expectedReferences, references);
     }
+
+    /// <summary>
+    /// Verifies that the CollectAllReferences task correctly collects package references.
+    /// </summary>
+    [Fact]
+    public async Task CollectAllReferences_PackageReferences_AreIncluded()
+    {
+        CreateProject("A");
+        CreateProject("B");
+        await AddPackageReference("A", "System.Text.Json");
+        await AddProjectReference("A", "B");
+        await Build();
+
+        var generatedFiles = GetGeneratedReferencesFiles();
+        Assert.Equal(2, generatedFiles.Count);
+
+        var references = generatedFiles.SelectMany(file => ReferenceItemExtensions.LoadFromFile(file))
+            .OrderBy(x => (x.Source, x.Target, x.LinkType))
+            .ToList();
+
+        var expectedReferences = new List<ReferenceItem>
+        {
+            new ReferenceItem("A", "B", ReferenceKind.ProjectReferenceDirect),
+            new ReferenceItem("A", "System.Text.Json", ReferenceKind.PackageReferenceDirect),
+        }
+        .Select(x => x with
+        {
+            Source = Path.Combine(TestDirectory, x.Source, $"{x.Source}.csproj"),
+            Target = x.LinkType == ReferenceKind.ProjectReferenceDirect
+                ? Path.Combine(TestDirectory, x.Target, $"{x.Target}.csproj")
+                : x.Target, // For package references, keep the package name as is
+        })
+        .OrderBy(x => (x.Source, x.Target, x.LinkType))
+        .ToList();
+
+        Assert.Equal(expectedReferences, references);
+    }
 }

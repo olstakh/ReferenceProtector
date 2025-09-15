@@ -107,6 +107,40 @@ bad json
     }
 
     /// <summary>
+    /// Validates that dependency policy violation for package references will produce a build warning.
+    /// </summary>
+    [Fact]
+    public async Task PackageReference_PackageDependencyRuleViolated_ProducesWarnings_Async()
+    {
+        var projectA = CreateProject("A");
+        var packageX = "System.Text.Json";
+        await AddPackageReference("A", packageX);
+        var testRulesPath = Path.Combine(TestDirectory, "testRules.json");
+        File.WriteAllText(testRulesPath, $$"""
+        {
+            "PackageDependencies": [
+            {
+                "From": "*",
+                "To": "System.Text.*",
+                "Policy": "Forbidden",
+                "Description": "test rule"
+            }           
+            ]
+        }
+    """);
+
+        var warnings = await Build(additionalArgs:
+            $"/p:DependencyRulesFile={testRulesPath}");
+
+        var warning = Assert.Single(warnings);
+        Assert.Equal(new Warning()
+        {
+            Message = $"RP0005: Package reference '{projectA}' ==> '{packageX}' violates dependency rule 'test rule' or one of its exceptions. Please remove the dependency or update '{testRulesPath}' file to allow it.",
+            Project = "A/A.csproj",
+        }, warning);
+    }
+
+    /// <summary>
     /// Validates that dependency policy violation will not produce a build warning when the feature is disabled.
     /// </summary>
     [Fact]

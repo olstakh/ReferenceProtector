@@ -3,4 +3,8 @@
   <ItemGroup>
     <ProjectReference Include="..\ClassC\ClassC.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" />
+  </ItemGroup>
 </Project>

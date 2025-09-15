@@ -22,4 +22,5 @@ internal enum ReferenceKind
 {
     ProjectReferenceDirect,
     ProjectReferenceTransitive,
+    PackageReferenceDirect,
 }

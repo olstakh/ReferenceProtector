@@ -58,6 +58,9 @@ public class ReferenceProtectorAnalyzerTests
             .WithNoLocation()
             .WithMessage("No dependency rules matched the current project 'TestProject.csproj'"));
 
+        test.TestState.AdditionalFiles.Add(
+            (ReferenceProtectorAnalyzer.DeclaredReferencesFile, ""));            
+
         await test.RunAsync(TestContext.Current.CancellationToken);
     }
 
@@ -103,6 +106,43 @@ public class ReferenceProtectorAnalyzerTests
         test.ExpectedDiagnostics.Add(DiagnosticResult.CompilerWarning("RP0004")
             .WithNoLocation()
             .WithMessage("Project reference 'TestProject.csproj' ==> 'TransitiveReferencedProject.csproj' violates dependency rule 'Can't reference this project transitively' or one of its exceptions. Please remove the dependency or update 'DependencyRules.json' file to allow it."));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    /// <summary>
+    /// Verifies that the analyzer reports a diagnostic when a package reference violates a defined dependency rule.
+    /// </summary>
+    [Fact]
+    public async Task ValidDependencyRulesFile_PackageDependencyViolated_ShouldReportDiagnostic_Async()
+    {
+        var test = GetAnalyzer();
+        test.TestState.AdditionalFiles.Add(
+            ("DependencyRules.json", """
+            {
+                "PackageDependencies": [
+                    {
+                        "From": "TestProject.csproj",
+                        "To": "Forbidden.Package",
+                        "Description": "Can't reference this package",
+                        "Policy": "Forbidden"
+                    }
+                ]
+            }
+            """));
+
+        test.TestState.AdditionalFiles.Add(
+            (ReferenceProtectorAnalyzer.DeclaredReferencesFile, """
+            TestProject.csproj	PackageReferenceDirect	Forbidden.Package
+            """));
+
+        test.ExpectedDiagnostics.Add(DiagnosticResult.CompilerWarning("RP0005")
+            .WithNoLocation()
+            .WithMessage("Package reference 'TestProject.csproj' ==> 'Forbidden.Package' violates dependency rule 'Can't reference this package' or one of its exceptions. Please remove the dependency or update 'DependencyRules.json' file to allow it."));
+
+        test.ExpectedDiagnostics.Add(new DiagnosticResult("RP0003", Microsoft.CodeAnalysis.DiagnosticSeverity.Info)
+            .WithNoLocation()
+            .WithMessage("No dependency rules matched the current project 'TestProject.csproj'"));
 
         await test.RunAsync(TestContext.Current.CancellationToken);
     }
