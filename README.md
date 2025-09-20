@@ -82,12 +82,12 @@ Top `ProjectDependencies` object will contain a list of rules to validate agains
 Top `PackageDependences` object will have the same format as `ProjectDependencies` with `LinkType` omitted, since only direct package references will be considered. Also, `Description` section will be part of `RP0005` warning (as opposed to `RP0004`)
 
 ## Matching logic
-Each reference between the projects during the build is evaluated against provided list of policies. First each pair of dependent projects is evaluated against `From` and `To` patterns, based on their full path. If the match is successful - their link type is evaluated: if current pair has a direct dependency on each other and `LinkType` value is `Direct` or `DirectOrTransient` - the match is successful, otherwise (the dependency is transient) - `LinkType` should be `Transient` or `DirectOrTransient` for the match to be successful. Then we exceptions are evaluated using the same pattern matching logic with `From` and `To` fields.
+Each reference between the projects / packages during the build is evaluated against provided list of policies. First each pair of dependencies is evaluated against `From` and `To` patterns, based on their full path. For project dependencies - if the match is successful - their link type is evaluated: if current pair has a direct dependency on each other and `LinkType` value is `Direct` or `DirectOrTransient` - the match is successful, otherwise (the dependency is transient) - `LinkType` should be `Transient` or `DirectOrTransient` for the match to be successful. Package dependencies are only viewed as direct references. Then the exceptions are evaluated using the same pattern matching logic with `From` and `To` fields.
 The decision logic is as follows
 - If current `Policy` value is `Forbidden` - the rule is considered violated if no exceptions were matched
 - If current `Policy` value is `Allowed` - the rule is considered violated if there are any matched exceptions
 
-Violations of the rule will produce `RT0004` warning during build.
+Violations of the rule will produce `RP0004` (for projects) and `RP0005` (for packages) warning during build.
 
 Note: in regex matches - `*` is substituted with `.*` for proper regex, and `$` is added at the end.
 ```
