@@ -33,38 +33,40 @@ Schema of the rules file is as follows:
 ```json
 {
     "ProjectDependencies": [
-    {
-        "From": "",
-        "To": "",
-        "Policy": "",
-        "LinkType": "",
-        "Description": "",
-        "Exceptions": [
-            {
-                "From": "",
-                "To": "",
-                "Justification": ""
-            },
-            // ...
-        ]
-    },
+        {
+            "From": "",
+            "To": "",
+            "Policy": "",
+            "LinkType": "",
+            "Description": "",
+            "Exceptions": [
+                {
+                    "From": "",
+                    "To": "",
+                    "Justification": ""
+                },
+                // ...
+            ]
+        },
+        // ...
+    ]
     "PackageDependencies": [
-    {
-        "From": "",
-        "To": "",
-        "Policy": "",
-        // "LinkType": "", Only direct package references are analyzed, so LinkType is not needed in this section
-        "Description": "",
-        "Exceptions": [
-            {
-                "From": "",
-                "To": "",
-                "Justification": ""
-            },
-            // ...
-        ]
-    },    
-    // ...
+        {
+            "From": "",
+            "To": "",
+            "Policy": "",
+            // "LinkType": "", Only direct package references are analyzed, so LinkType is not needed in this section
+            "Description": "",
+            "Exceptions": [
+                {
+                    "From": "",
+                    "To": "",
+                    "Justification": ""
+                },
+                // ...
+            ]
+        }, 
+        // ...
     ]
 }
 ```
@@ -106,21 +108,21 @@ Below are few examples of potential rules
     "from": "*\\Infrastructure\\*",
     "to": "*",
     "exceptions": [
-    {
-        "from": "*\\Infrastructure\\*",
-        "to": "*\\Infrastructure\\*",
-        "justification": "Infrastructure projects can reference each other"
-    },
-    {
-        "from": "*Tests.csproj",
-        "to": "*",
-        "justification": "tech debt <work item link>"
-    },
-    {
-        "from": "*",
-        "to": "LegacyDependency.csproj",
-        "justification": "tech debt <work item link>"
-    }
+        {
+            "from": "*\\Infrastructure\\*",
+            "to": "*\\Infrastructure\\*",
+            "justification": "Infrastructure projects can reference each other"
+        },
+        {
+            "from": "*Tests.csproj",
+            "to": "*",
+            "justification": "tech debt <work item link>"
+        },
+        {
+            "from": "*",
+            "to": "LegacyDependency.csproj",
+            "justification": "tech debt <work item link>"
+        }
     ]
 },
 ```
@@ -155,7 +157,7 @@ Below are few examples of potential rules
 ```
 
 ## How it works
-First - MSBuild task with gather all direct / indirect project references and dump them into a file (typically in `obj/Debug/` folder), named `references.tsv` (inspired by [ReferenceTrimmer](https://github.com/dfederm/ReferenceTrimmer) implementation). During the second stage - Roslyn analyzer will read this file and match it against the dependency rules, defined in a file from `<DependencyRulesFile>` property. Corresponding diagnostics will be produced if violations are found.
+First - MSBuild task with gather all direct / indirect project references and dump them into a file (typically in `obj/Debug/` folder), named `_ReferenceProtector_DeclaredReferences.tsv` (inspired by [ReferenceTrimmer](https://github.com/dfederm/ReferenceTrimmer) implementation). During the second stage - Roslyn analyzer will read this file and match it against the dependency rules, defined in a file from `<DependencyRulesFile>` property. Corresponding diagnostics will be produced if violations are found.
 
 ## How to disable
 Easiest way is to set `EnableReferenceProtector` variable to false (either in command line or in a project file, like `<EnableReferenceProtector>false</EnableReferenceProtector>`)
