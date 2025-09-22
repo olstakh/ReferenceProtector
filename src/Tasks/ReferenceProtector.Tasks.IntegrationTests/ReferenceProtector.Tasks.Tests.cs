@@ -127,6 +127,9 @@ public class CollectAllReferencesIntegrationTests : TestBase
         Assert.Equal(expectedReferences, references);
     }
 
+    /// <summary>
+    /// Verifies that the CollectAllReferences task does not update the reference file timestamp if no changes were made.
+    /// </summary>
     [Fact]
     public async Task CollectAllReferences_IncrememtalBuild_ReferenceTimestampIsNotUpdated()
     {
@@ -135,14 +138,16 @@ public class CollectAllReferencesIntegrationTests : TestBase
         await AddProjectReference("A", "B");
         await Build();
 
-        var generatedFiles = GetGeneratedReferencesFiles();
-
-        var timeStamps1 = generatedFiles.Select(File.GetLastWriteTimeUtc).ToList();
+        var generatedFiles1 = GetGeneratedReferencesFiles();
+        var timeStamps1 = generatedFiles1.Select(File.GetLastWriteTimeUtc).ToList();
 
         // Rebuild without any changes
         await Build();
 
-        var timeStamps2 = generatedFiles.Select(File.GetLastWriteTimeUtc).ToList();
+        var generatedFiles2 = GetGeneratedReferencesFiles();
+        var timeStamps2 = generatedFiles2.Select(File.GetLastWriteTimeUtc).ToList();
+
+        Assert.Equal(generatedFiles1, generatedFiles2);
         Assert.Equal(timeStamps1, timeStamps2);
     }
 }
