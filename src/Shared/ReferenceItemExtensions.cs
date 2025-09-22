@@ -14,6 +14,18 @@ internal static class ReferenceItemExtensions
 
     public static void SaveToFile(this List<ReferenceItem> items, string outputFile)
     {
+        if (File.Exists(outputFile))
+        {
+            var currentContents = File.ReadAllLines(outputFile);
+            var newContents = items.Select(item => item.ToFileLine()).ToArray();
+            // Assuming order is the same for incremental builds, no sorting needed
+            if (currentContents.SequenceEqual(newContents))
+            {
+                // No changes, skip writing to avoid updating the timestamp, which will trigger unnecessary rebuilds
+                return;
+            }
+        }
+
         File.WriteAllLines(outputFile, items.Select(item => item.ToFileLine()));
     }
 
