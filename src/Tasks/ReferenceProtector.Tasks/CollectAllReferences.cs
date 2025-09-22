@@ -82,7 +82,9 @@ public class CollectAllReferences : Microsoft.Build.Utilities.Task
 
         if (OutputFile is not null)
         {
-            references.SaveToFile(OutputFile);
+            // Is sorted to ensure consistent ordering for easier testing and to avoid unnecessary diffs
+            // May not needed, if msbuild guarantees a consistent order
+            references.OrderBy(x => (x.Source, x.Target, x.LinkType)).ToList().SaveToFile(OutputFile);
             return true;
         }
 

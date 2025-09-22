@@ -143,7 +143,7 @@ public class Class1
     {
         string buildArgs =
             $"build dirs.proj " +
-            $"-m:1 -t:Rebuild -restore -nologo -nodeReuse:false -noAutoResponse " +
+            $"-m:1 -restore -nologo -nodeReuse:false -noAutoResponse " +
             $"/p:Configuration=Debug " +
             $"/p:ReferenceProtectorTaskAssembly={Path.Combine(Directory.GetCurrentDirectory(), "ReferenceProtector.Tasks.dll")} " +
             $"/v:m" +
