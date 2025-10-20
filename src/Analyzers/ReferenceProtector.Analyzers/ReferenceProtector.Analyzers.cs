@@ -42,7 +42,8 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
         Descriptors.InvalidDependencyRulesFormat,
         Descriptors.NoDependencyRulesMatchedCurrentProject,
         Descriptors.ProjectReferenceViolation,
-        Descriptors.PackageReferenceViolation
+        Descriptors.PackageReferenceViolation,
+        Descriptors.InvalidRegularExpression
     ];
 
     /// <inheritdoc />
@@ -83,11 +84,11 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        DependencyRules? rules = null;
+        DependencyRules<string>? rules = null;
 
         try
         {
-            rules = JsonSerializer.Deserialize<DependencyRules>(content, s_jsonSerializerOptions);
+            rules = JsonSerializer.Deserialize<DependencyRules<string>>(content, s_jsonSerializerOptions);
         }
         catch (JsonException ex)
         {
@@ -134,11 +135,14 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
         var declaredReferences = declaredReferencesContent
             .Where(line => !string.IsNullOrWhiteSpace(line.ToString()))
             .Select(line => ReferenceItem.FromLine(line.ToString()))
-            .Where(r => IsMatchByName(r.Source, projectPath));
+            .Where(r => Path.GetFullPath(r.Source).Equals(Path.GetFullPath(projectPath)));
 
         // Analyze project dependencies
         {
             var thisProjectDependencyRules = (rules.ProjectDependencies ?? [])
+                .Select(x => x.Convert(FromPattern(context)))
+                .Where(x => x.From != null && x.To != null && (x.Exceptions ?? []).All(e => e.From != null && e.To != null))
+                .Select(x => x.Convert(y => y!))
                 .Where(pd => IsMatchByName(pd.From, projectPath))
                 .ToList();
 
@@ -156,6 +160,9 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
         // Analyze package dependencies
         {
             var thisPackageDependencyRules = (rules.PackageDependencies ?? [])
+                .Select(x => x.Convert(FromPattern(context)))
+                .Where(x => x.From != null && x.To != null && (x.Exceptions ?? []).All(e => e.From != null && e.To != null))
+                .Select(x => x.Convert(y => y!))
                 .Where(pd => IsMatchByName(pd.From, projectPath))
                 .ToList();
 
@@ -169,7 +176,7 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
     private void AnalyzeDeclaredProjectReferences(
         CompilationAnalysisContext context,
         ImmutableArray<ReferenceItem> declaredReferences,
-        ImmutableArray<ProjectDependency> dependencyRules,
+        ImmutableArray<ProjectDependency<Regex>> dependencyRules,
         DiagnosticDescriptor descriptor,
         string dependencyRulesFile)
     {
@@ -213,7 +220,7 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
     private void AnalyzeDeclaredPackageReferences(
         CompilationAnalysisContext context,
         ImmutableArray<ReferenceItem> declaredReferences,
-        ImmutableArray<PackageDependency> dependencyRules,
+        ImmutableArray<PackageDependency<Regex>> dependencyRules,
         DiagnosticDescriptor descriptor,
         string dependencyRulesFile)
     {
@@ -250,12 +257,26 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
                 }
             }
         }
-    }    
+    }
 
-    private static bool IsMatchByName(string pattern, string project)
+    private static bool IsMatchByName(Regex pattern, string project) =>
+        pattern.IsMatch(project);
+
+    private static Converter<string, Regex?> FromPattern(CompilationAnalysisContext context) => (string pattern) =>
     {
-        var regex = Regex.Escape(pattern).Replace("\\*", ".*") + "$";
-        var match = Regex.IsMatch(project, regex, RegexOptions.IgnoreCase);
-        return match;
-    }    
+        try
+        {
+            return new Regex(pattern, RegexOptions.IgnoreCase);
+        }
+        catch (ArgumentException ex)
+        {
+            context.ReportDiagnostic(Diagnostic.Create(
+                Descriptors.InvalidRegularExpression,
+                Location.None,
+                pattern,
+                ex.Message));
+
+            return null;
+        }
+    };
 }

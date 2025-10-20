@@ -45,4 +45,12 @@ internal static class Descriptors
         category: "Usage",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor InvalidRegularExpression = new(
+        id: "RP0006",
+        title: "Invalid regular expression",
+        messageFormat: "The regular expression '{0}' is invalid: {1}",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
 }

@@ -159,20 +159,20 @@ public class ReferenceProtectorAnalyzerTests
             {
                 "ProjectDependencies": [
                     {
-                        "From": "*",
-                        "To": "*",
+                        "From": ".*",
+                        "To": ".*",
                         "Description": "Can't reference this project directly",
                         "Policy": "Forbidden",
                         "LinkType": "DirectOrTransitive",
                         "Exceptions": [
                             {
-                                "From": "TestProject.csproj",
-                                "To": "ReferencedProject.csproj",
+                                "From": "TestProject\\.csproj",
+                                "To": "ReferencedProject\\.csproj",
                                 "Justification": "This is an exception"
                             },
                             {
-                                "From": "TestProject.csproj",
-                                "To": "TransitiveReferencedProject.csproj",
+                                "From": "TestProject\\.csproj",
+                                "To": "TransitiveReferencedProject\\.csproj",
                                 "Justification": "This is an exception"
                             }
                         ]
