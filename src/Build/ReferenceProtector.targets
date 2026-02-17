@@ -9,7 +9,7 @@
 
   <Target Name="CollectDeclaredReferencesReferenceProtector" DependsOnTargets="ResolveAssemblyReferences;PrepareProjectReferences" Condition="'$(EnableReferenceProtector)' != 'false'">
     <PropertyGroup>
-      <_ReferenceProtectorDeclaredReferences>$(IntermediateOutputPath)\_ReferenceProtector_DeclaredReferences.tsv</_ReferenceProtectorDeclaredReferences>
+      <_ReferenceProtectorDeclaredReferences>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)\_ReferenceProtector_DeclaredReferences.tsv'))</_ReferenceProtectorDeclaredReferences>
     </PropertyGroup>
     <ItemGroup>
       <_ReferenceProtectorReferences Include="@(Reference)" />

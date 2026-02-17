@@ -7,15 +7,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Framework" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3.mtp-v2" />
     <PackageReference Include="Moq" />
-    <PackageReference Include="xunit.runner.visualstudio">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="xunit.v3" />
-    <PackageReference Include="xunit.v3.assert" />
-    <PackageReference Include="xunit.v3.core" />
   </ItemGroup>
 
   <!-- Exclude Manual folder from compilation -->
