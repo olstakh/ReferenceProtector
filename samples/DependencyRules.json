@@ -1,4 +1,5 @@
 {
+    "$schema": "https://raw.githubusercontent.com/olstakh/ReferenceProtector/main/src/Build/DependencyRules.schema.json",
     "ProjectDependencies": [
     {
         "From": "*\\ClassA.csproj",

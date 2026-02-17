@@ -1,0 +1,145 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/olstakh/ReferenceProtector/main/src/Build/DependencyRules.schema.json",
+  "title": "ReferenceProtector Dependency Rules",
+  "description": "Defines rules for allowed and forbidden project and package references, enforced at build time by ReferenceProtector.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "The JSON schema reference for this file."
+    },
+    "ProjectDependencies": {
+      "type": "array",
+      "description": "Rules governing project-to-project references (both direct and transitive).",
+      "items": {
+        "$ref": "#/definitions/ProjectDependency"
+      }
+    },
+    "PackageDependencies": {
+      "type": "array",
+      "description": "Rules governing direct package references.",
+      "items": {
+        "$ref": "#/definitions/PackageDependency"
+      }
+    }
+  },
+  "definitions": {
+    "ProjectDependency": {
+      "type": "object",
+      "description": "A rule that matches project-to-project references.",
+      "required": [
+        "From",
+        "To",
+        "Description",
+        "Policy",
+        "LinkType"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "From": {
+          "type": "string",
+          "description": "A regex pattern matching the source project path. Use '*' as a shorthand for '.*' (e.g., '*\\\\ClassA.csproj')."
+        },
+        "To": {
+          "type": "string",
+          "description": "A regex pattern matching the referenced project path. Use '*' as a shorthand for '.*' (e.g., '*\\\\ClassB.csproj')."
+        },
+        "Description": {
+          "type": "string",
+          "description": "A human-readable description of this rule, shown in diagnostic messages when the rule is violated."
+        },
+        "Policy": {
+          "$ref": "#/definitions/Policy"
+        },
+        "LinkType": {
+          "$ref": "#/definitions/LinkType"
+        },
+        "Exceptions": {
+          "type": "array",
+          "description": "Optional list of exceptions to this rule. For Forbidden rules, matching exceptions allow the reference. For Allowed rules, matching exceptions forbid the reference.",
+          "items": {
+            "$ref": "#/definitions/Exception"
+          }
+        }
+      }
+    },
+    "PackageDependency": {
+      "type": "object",
+      "description": "A rule that matches direct package references.",
+      "required": [
+        "From",
+        "To",
+        "Description",
+        "Policy"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "From": {
+          "type": "string",
+          "description": "A regex pattern matching the source project path. Use '*' as a shorthand for '.*' (e.g., '*\\\\ClassA.csproj')."
+        },
+        "To": {
+          "type": "string",
+          "description": "A regex pattern matching the package name. Use '*' as a shorthand for '.*' (e.g., 'Forbidden.*')."
+        },
+        "Description": {
+          "type": "string",
+          "description": "A human-readable description of this rule, shown in diagnostic messages when the rule is violated."
+        },
+        "Policy": {
+          "$ref": "#/definitions/Policy"
+        },
+        "Exceptions": {
+          "type": "array",
+          "description": "Optional list of exceptions to this rule. For Forbidden rules, matching exceptions allow the reference. For Allowed rules, matching exceptions forbid the reference.",
+          "items": {
+            "$ref": "#/definitions/Exception"
+          }
+        }
+      }
+    },
+    "Policy": {
+      "type": "string",
+      "description": "Determines whether the matched reference is allowed or forbidden.",
+      "enum": [
+        "Allowed",
+        "Forbidden"
+      ]
+    },
+    "LinkType": {
+      "type": "string",
+      "description": "Specifies which type of project reference the rule applies to.",
+      "enum": [
+        "Direct",
+        "Transitive",
+        "DirectOrTransitive"
+      ]
+    },
+    "Exception": {
+      "type": "object",
+      "description": "An exception to a dependency rule.",
+      "required": [
+        "From",
+        "To",
+        "Justification"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "From": {
+          "type": "string",
+          "description": "A regex pattern matching the source project path for this exception."
+        },
+        "To": {
+          "type": "string",
+          "description": "A regex pattern matching the referenced project or package for this exception."
+        },
+        "Justification": {
+          "type": "string",
+          "description": "A human-readable justification for why this exception exists."
+        }
+      }
+    }
+  }
+}
