@@ -1,0 +1,30 @@
+<Solution>
+  <Folder Name="/Analyzers/">
+    <Project Path="src\Analyzers\ReferenceProtector.Analyzers\ReferenceProtector.Analyzers.csproj" />
+    <Project Path="src\Analyzers\ReferenceProtector.Analyzers.Tests\ReferenceProtector.Analyzers.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Build/">
+    <File Path="src\Build\ReferenceProtector.props" />
+    <File Path="src\Build\ReferenceProtector.targets" />
+  </Folder>
+  <Folder Name="/Package/">
+    <Project Path="src\Package\ReferenceProtector.Package.csproj" />
+  </Folder>
+  <Folder Name="/Tasks/">
+    <Project Path="src\Tasks\ReferenceProtector.Tasks\ReferenceProtector.Tasks.csproj" />
+    <Project Path="src\Tasks\ReferenceProtector.Tasks.UnitTests\ReferenceProtector.Tasks.UnitTests.csproj" />
+    <Project Path="src\Tasks\ReferenceProtector.Tasks.IntegrationTests\ReferenceProtector.Tasks.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests\ReferenceProtector.IntegrationTests\ReferenceProtector.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="CLAUDE.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="Nuget.config" />
+    <File Path="README.md" />
+    <File Path="version.json" />
+  </Folder>
+</Solution>
