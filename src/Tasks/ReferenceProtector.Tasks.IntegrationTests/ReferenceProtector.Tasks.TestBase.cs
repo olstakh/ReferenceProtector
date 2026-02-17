@@ -60,6 +60,14 @@ public class TestBase : IDisposable
 """);
         }
 
+        // Create an empty Directory.Packages.props to decouple from the repo's CPM settings
+        {
+            var packagesPropsPath = Path.Combine(testDirectory, "Directory.Packages.props");
+            Output.WriteLine($"Creating packages props file: {packagesPropsPath}");
+
+            File.WriteAllText(packagesPropsPath, """<Project />""");
+        }
+
         // Create the build props file
         {
             var buildPropsPath = Path.Combine(testDirectory, "Directory.Build.props");
@@ -68,6 +76,9 @@ public class TestBase : IDisposable
             File.WriteAllText(buildPropsPath, """
 <Project>
   <Import Project="..\ReferenceProtector.props" />
+  <PropertyGroup>
+    <DisableTransitiveProjectReferences>false</DisableTransitiveProjectReferences>
+  </PropertyGroup>
 </Project>
 """);
         }
