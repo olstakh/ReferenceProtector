@@ -32,6 +32,7 @@ Create a `.json` file somewhere in your repository that will contain dependency 
 Schema of the rules file is as follows:
 ```json
 {
+    "$schema": "https://raw.githubusercontent.com/olstakh/ReferenceProtector/main/src/Build/DependencyRules.schema.json",
     "ProjectDependencies": [
         {
             "From": "",

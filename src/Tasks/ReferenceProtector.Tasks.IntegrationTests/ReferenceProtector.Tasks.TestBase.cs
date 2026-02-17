@@ -51,11 +51,22 @@ public class TestBase : IDisposable
 
             File.WriteAllText(dirsProjPath, """
 <?xml version="1.0" encoding="utf-8"?>
-<Project Sdk="Microsoft.Build.Traversal">
+<Project DefaultTargets="Build">
     <ItemGroup>
-        <ProjectReference Include="**\dirs.proj" />
-        <ProjectReference Include="**\*.csproj" />
+        <ProjectFiles Include="**\*.csproj" />
     </ItemGroup>
+    <Target Name="Restore">
+        <MSBuild Projects="@(ProjectFiles)" Targets="Restore" />
+    </Target>
+    <Target Name="Build">
+        <MSBuild Projects="@(ProjectFiles)" />
+    </Target>
+    <Target Name="Rebuild">
+        <MSBuild Projects="@(ProjectFiles)" Targets="Rebuild" />
+    </Target>
+    <Target Name="Clean">
+        <MSBuild Projects="@(ProjectFiles)" Targets="Clean" />
+    </Target>
 </Project>
 """);
         }
