@@ -182,7 +182,6 @@ public class Class1
         string errorsFilePath = Path.Combine(logDirBase, "build.errors.log");
 
         await RunDotnetCommandAsync(TestDirectory, $"restore dirs.proj -f", TestContext.Current.CancellationToken);
-        await RunDotnetCommandAsync(TestDirectory, $"list dirs.proj package", TestContext.Current.CancellationToken);
 
         string buildArgs =
             $"build dirs.proj " +
