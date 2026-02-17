@@ -81,7 +81,28 @@ public class TestBase : IDisposable
 </Project>
 
 """);
-        }        
+        }
+
+        // Create a nuget.config that includes both the local package source (for ReferenceProtector)
+        // and NuGet.org (for framework packages like Microsoft.NETCore.App.Ref).
+        // This avoids using -s which replaces all sources and can cause flaky NU1101 failures
+        // when framework targeting packs aren't in the global NuGet cache yet.
+        {
+            var nugetConfigPath = Path.Combine(testDirectory, "nuget.config");
+            var localSource = Directory.GetCurrentDirectory();
+            Output.WriteLine($"Creating nuget.config file: {nugetConfigPath} (local source: {localSource})");
+
+            File.WriteAllText(nugetConfigPath, $"""
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key="Local" value="{localSource}" />
+    <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
+  </packageSources>
+</configuration>
+""");
+        }
 
         return testDirectory;
     }
@@ -149,13 +170,13 @@ public class Class1
         string warningsFilePath = Path.Combine(logDirBase, "build.warnings.log");
         string errorsFilePath = Path.Combine(logDirBase, "build.errors.log");
 
-        await RunDotnetCommandAsync(TestDirectory, $"restore dirs.proj -f -s {Directory.GetParent(TestDirectory)}", TestContext.Current.CancellationToken);
+        await RunDotnetCommandAsync(TestDirectory, $"restore dirs.proj -f", TestContext.Current.CancellationToken);
         await RunDotnetCommandAsync(TestDirectory, $"dotnet list dirs.proj package", TestContext.Current.CancellationToken);
 
         string buildArgs =
             $"build dirs.proj " +
             $"-m:1 -t:Rebuild -nologo -nodeReuse:false -noAutoResponse " +
-            $"/p:Configuration=Debug /p:RestoreSources=\"{Directory.GetParent(TestDirectory)}\" " +
+            $"/p:Configuration=Debug " +
             $"-bl:\"{binlogFilePath}\" " +
             $"-flp1:logfile=\"{errorsFilePath}\";errorsonly " +
             $"-flp2:logfile=\"{warningsFilePath}\";warningsonly " +
