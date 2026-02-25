@@ -169,4 +169,139 @@ bad json
 
         Assert.Empty(warnings);
     }
+
+    /// <summary>
+    /// Validates that a stale tech debt exception (one that no longer matches any declared reference) produces an RP0006 warning.
+    /// </summary>
+    [Fact]
+    public async Task TechDebtException_NoLongerNeeded_ProducesWarning_Async()
+    {
+        var projectA = CreateProject("A");
+        var projectB = CreateProject("B");
+        await AddProjectReference("A", "B");
+        var testRulesPath = Path.Combine(TestDirectory, "testRules.json");
+        File.WriteAllText(testRulesPath, $$"""
+        {
+            "ProjectDependencies": [
+            {
+                "From": "{{projectA.Replace("\\", "\\\\")}}",
+                "To": "*",
+                "LinkType": "Direct",
+                "Policy": "Forbidden",
+                "Description": "test rule",
+                "Exceptions": [
+                    {
+                        "From": "{{projectA.Replace("\\", "\\\\")}}",
+                        "To": "{{projectB.Replace("\\", "\\\\")}}",
+                        "Justification": "Current tech debt",
+                        "IsTechDebt": true
+                    },
+                    {
+                        "From": "{{projectA.Replace("\\", "\\\\")}}",
+                        "To": "*OldProject.csproj",
+                        "Justification": "Stale tech debt",
+                        "IsTechDebt": true
+                    }
+                ]
+            }           
+            ]
+        }
+    """);
+
+        var warnings = await Build(additionalArgs:
+            $"/p:DependencyRulesFile={testRulesPath}");
+
+        // The exception for A→B still matches, so no RP0006 for it.
+        // The exception for A→*OldProject.csproj is stale, so RP0006 is expected.
+        var warning = Assert.Single(warnings);
+        Assert.Equal(new Warning()
+        {
+            Message = $"RP0006: Tech debt exception '{projectA}' ==> '*OldProject.csproj' in rule 'test rule' no longer matches any declared reference and can be removed from '{testRulesPath}'",
+            Project = "A/A.csproj",
+        }, warning);
+    }
+
+    /// <summary>
+    /// Validates that a tech debt exception that still matches a declared reference does NOT produce an RP0006 warning.
+    /// </summary>
+    [Fact]
+    public async Task TechDebtException_StillNeeded_NoWarning_Async()
+    {
+        var projectA = CreateProject("A");
+        var projectB = CreateProject("B");
+        await AddProjectReference("A", "B");
+        var testRulesPath = Path.Combine(TestDirectory, "testRules.json");
+        File.WriteAllText(testRulesPath, $$"""
+        {
+            "ProjectDependencies": [
+            {
+                "From": "{{projectA.Replace("\\", "\\\\")}}",
+                "To": "*",
+                "LinkType": "Direct",
+                "Policy": "Forbidden",
+                "Description": "test rule",
+                "Exceptions": [
+                    {
+                        "From": "{{projectA.Replace("\\", "\\\\")}}",
+                        "To": "{{projectB.Replace("\\", "\\\\")}}",
+                        "Justification": "Current tech debt - still needed",
+                        "IsTechDebt": true
+                    }
+                ]
+            }           
+            ]
+        }
+    """);
+
+        var warnings = await Build(additionalArgs:
+            $"/p:DependencyRulesFile={testRulesPath}");
+
+        // The tech debt exception still matches A→B, so no RP0006.
+        // And the exception suppresses the RP0004 violation.
+        Assert.Empty(warnings);
+    }
+
+    /// <summary>
+    /// Validates that a non-tech-debt exception that no longer matches does NOT produce an RP0006 warning.
+    /// </summary>
+    [Fact]
+    public async Task NonTechDebtException_NoLongerNeeded_NoWarning_Async()
+    {
+        var projectA = CreateProject("A");
+        var projectB = CreateProject("B");
+        await AddProjectReference("A", "B");
+        var testRulesPath = Path.Combine(TestDirectory, "testRules.json");
+        File.WriteAllText(testRulesPath, $$"""
+        {
+            "ProjectDependencies": [
+            {
+                "From": "{{projectA.Replace("\\", "\\\\")}}",
+                "To": "*",
+                "LinkType": "Direct",
+                "Policy": "Forbidden",
+                "Description": "test rule",
+                "Exceptions": [
+                    {
+                        "From": "{{projectA.Replace("\\", "\\\\")}}",
+                        "To": "{{projectB.Replace("\\", "\\\\")}}",
+                        "Justification": "Legitimate exception"
+                    },
+                    {
+                        "From": "{{projectA.Replace("\\", "\\\\")}}",
+                        "To": "*OldProject.csproj",
+                        "Justification": "Legitimate exception, not tech debt"
+                    }
+                ]
+            }           
+            ]
+        }
+    """);
+
+        var warnings = await Build(additionalArgs:
+            $"/p:DependencyRulesFile={testRulesPath}");
+
+        // No RP0006 because neither exception has IsTechDebt=true.
+        // A→B is covered by the first exception, so no RP0004 either.
+        Assert.Empty(warnings);
+    }
 }
