@@ -45,4 +45,12 @@ internal static class Descriptors
         category: "Usage",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor TechDebtExceptionNoLongerNeeded = new(
+        id: "RP0006",
+        title: "Tech debt exception is no longer needed",
+        messageFormat: "Tech debt exception '{0}' ==> '{1}' in rule '{2}' no longer matches any declared reference and can be removed from '{3}'",
+        category: "Usage",
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
 }

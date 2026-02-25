@@ -138,6 +138,11 @@
         "Justification": {
           "type": "string",
           "description": "A human-readable justification for why this exception exists."
+        },
+        "IsTechDebt": {
+          "type": "boolean",
+          "default": false,
+          "description": "When true, marks this exception as temporary technical debt. The analyzer will warn (RP0006) when the exception no longer matches any declared reference and can be removed."
         }
       }
     }

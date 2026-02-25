@@ -42,7 +42,8 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
         Descriptors.InvalidDependencyRulesFormat,
         Descriptors.NoDependencyRulesMatchedCurrentProject,
         Descriptors.ProjectReferenceViolation,
-        Descriptors.PackageReferenceViolation
+        Descriptors.PackageReferenceViolation,
+        Descriptors.TechDebtExceptionNoLongerNeeded
     ];
 
     /// <inheritdoc />
@@ -151,6 +152,7 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
             }
 
             AnalyzeDeclaredProjectReferences(context, declaredReferences.ToImmutableArray(), thisProjectDependencyRules.ToImmutableArray(), Descriptors.ProjectReferenceViolation, dependencyRulesFile.Path);
+            ReportStaleTechDebtProjectExceptions(context, declaredReferences.ToImmutableArray(), thisProjectDependencyRules.ToImmutableArray(), dependencyRulesFile.Path);
         }
         
         // Analyze package dependencies
@@ -163,6 +165,7 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
                 .Where(r => r.LinkType == ReferenceKind.PackageReferenceDirect);
 
             AnalyzeDeclaredPackageReferences(context, packageReferences.ToImmutableArray(), thisPackageDependencyRules.ToImmutableArray(), Descriptors.PackageReferenceViolation, dependencyRulesFile.Path);
+            ReportStaleTechDebtPackageExceptions(context, packageReferences.ToImmutableArray(), thisPackageDependencyRules.ToImmutableArray(), dependencyRulesFile.Path);
         }
     }
 
@@ -251,6 +254,76 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
             }
         }
     }    
+
+    private void ReportStaleTechDebtProjectExceptions(
+        CompilationAnalysisContext context,
+        ImmutableArray<ReferenceItem> declaredReferences,
+        ImmutableArray<ProjectDependency> dependencyRules,
+        string dependencyRulesFile)
+    {
+        foreach (var rule in dependencyRules)
+        {
+            if (rule.Exceptions == null)
+                continue;
+
+            foreach (var exception in rule.Exceptions)
+            {
+                if (!exception.IsTechDebt)
+                    continue;
+
+                var exceptionStillNeeded = declaredReferences.Any(reference =>
+                    IsMatchByName(exception.From, reference.Source) &&
+                    IsMatchByName(exception.To, reference.Target) &&
+                    (rule.LinkType != LinkType.Transitive && reference.LinkType == ReferenceKind.ProjectReferenceDirect ||
+                     rule.LinkType != LinkType.Direct && reference.LinkType == ReferenceKind.ProjectReferenceTransitive));
+
+                if (!exceptionStillNeeded)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Descriptors.TechDebtExceptionNoLongerNeeded,
+                        Location.None,
+                        exception.From,
+                        exception.To,
+                        rule.Description,
+                        dependencyRulesFile));
+                }
+            }
+        }
+    }
+
+    private void ReportStaleTechDebtPackageExceptions(
+        CompilationAnalysisContext context,
+        ImmutableArray<ReferenceItem> declaredReferences,
+        ImmutableArray<PackageDependency> dependencyRules,
+        string dependencyRulesFile)
+    {
+        foreach (var rule in dependencyRules)
+        {
+            if (rule.Exceptions == null)
+                continue;
+
+            foreach (var exception in rule.Exceptions)
+            {
+                if (!exception.IsTechDebt)
+                    continue;
+
+                var exceptionStillNeeded = declaredReferences.Any(reference =>
+                    IsMatchByName(exception.From, reference.Source) &&
+                    IsMatchByName(exception.To, reference.Target));
+
+                if (!exceptionStillNeeded)
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Descriptors.TechDebtExceptionNoLongerNeeded,
+                        Location.None,
+                        exception.From,
+                        exception.To,
+                        rule.Description,
+                        dependencyRulesFile));
+                }
+            }
+        }
+    }
 
     private static bool IsMatchByName(string pattern, string project)
     {
