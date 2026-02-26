@@ -262,6 +262,53 @@ bad json
     }
 
     /// <summary>
+    /// Validates that a tech debt exception scoped to a different project does NOT produce RP0006 during the current project's compilation.
+    /// </summary>
+    [Fact]
+    public async Task TechDebtException_ForDifferentProject_NoWarning_Async()
+    {
+        var projectA = CreateProject("A");
+        var projectB = CreateProject("B");
+        await AddProjectReference("A", "B");
+        var testRulesPath = Path.Combine(TestDirectory, "testRules.json");
+        File.WriteAllText(testRulesPath, $$"""
+        {
+            "ProjectDependencies": [
+            {
+                "From": "*",
+                "To": "*",
+                "LinkType": "Direct",
+                "Policy": "Forbidden",
+                "Description": "test rule",
+                "Exceptions": [
+                    {
+                        "From": "{{projectA.Replace("\\", "\\\\")}}",
+                        "To": "{{projectB.Replace("\\", "\\\\")}}",
+                        "Justification": "Tech debt for A",
+                        "IsTechDebt": true
+                    },
+                    {
+                        "From": "{{projectB.Replace("\\", "\\\\")}}",
+                        "To": "*SomeOtherProject.csproj",
+                        "Justification": "Tech debt for B, not relevant for A",
+                        "IsTechDebt": true
+                    }
+                ]
+            }           
+            ]
+        }
+    """);
+
+        var warnings = await Build(additionalArgs:
+            $"/p:DependencyRulesFile={testRulesPath}");
+
+        // A→B is covered by the first exception (still needed), so no RP0004 or RP0006 for A.
+        // The second exception (B→*SomeOtherProject.csproj) is for project B, so project A should NOT report RP0006 for it.
+        // Project B has no references, so no warnings from B either.
+        Assert.Empty(warnings);
+    }
+
+    /// <summary>
     /// Validates that a non-tech-debt exception that no longer matches does NOT produce an RP0006 warning.
     /// </summary>
     [Fact]
