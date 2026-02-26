@@ -25,7 +25,8 @@ internal record PackageDependency(
 internal record Exceptions(
     string From,
     string To,
-    string Justification);
+    string Justification,
+    bool IsTechDebt = false);
 
 internal enum Policy
 {

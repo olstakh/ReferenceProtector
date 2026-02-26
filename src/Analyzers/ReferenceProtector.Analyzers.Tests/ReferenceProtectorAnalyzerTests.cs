@@ -231,4 +231,229 @@ public class ReferenceProtectorAnalyzerTests
             },
             ReferenceAssemblies = ReferenceAssemblies.Net.Net90
         };
+
+    /// <summary>
+    /// Verifies that the analyzer reports RP0006 when a tech debt exception no longer matches any declared project reference.
+    /// </summary>
+    [Fact]
+    public async Task TechDebtException_NoLongerNeeded_ShouldReportDiagnostic_Async()
+    {
+        var test = GetAnalyzer();
+        test.TestState.AdditionalFiles.Add(
+            ("DependencyRules.json", """
+            {
+                "ProjectDependencies": [
+                    {
+                        "From": "*",
+                        "To": "*",
+                        "Description": "No direct project references allowed",
+                        "Policy": "Forbidden",
+                        "LinkType": "Direct",
+                        "Exceptions": [
+                            {
+                                "From": "TestProject.csproj",
+                                "To": "OldProject.csproj",
+                                "Justification": "Legacy dependency to be removed",
+                                "IsTechDebt": true
+                            }
+                        ]
+                    }
+                ]
+            }
+            """));
+
+        // OldProject.csproj is NOT in the declared references
+        test.TestState.AdditionalFiles.Add(
+            (ReferenceProtectorAnalyzer.DeclaredReferencesFile, """
+            TestProject.csproj	ProjectReferenceDirect	SomeOtherProject.csproj
+            """));
+
+        test.ExpectedDiagnostics.Add(DiagnosticResult.CompilerWarning("RP0004")
+            .WithNoLocation()
+            .WithMessage("Project reference 'TestProject.csproj' ==> 'SomeOtherProject.csproj' violates dependency rule 'No direct project references allowed' or one of its exceptions. Please remove the dependency or update 'DependencyRules.json' file to allow it."));
+
+        test.ExpectedDiagnostics.Add(DiagnosticResult.CompilerWarning("RP0006")
+            .WithNoLocation()
+            .WithMessage("Tech debt exception 'TestProject.csproj' ==> 'OldProject.csproj' in rule 'No direct project references allowed' no longer matches any declared reference and can be removed from 'DependencyRules.json'"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    /// <summary>
+    /// Verifies that the analyzer does NOT report RP0006 when a tech debt exception still matches a declared project reference.
+    /// </summary>
+    [Fact]
+    public async Task TechDebtException_StillNeeded_ShouldNotReportDiagnostic_Async()
+    {
+        var test = GetAnalyzer();
+        test.TestState.AdditionalFiles.Add(
+            ("DependencyRules.json", """
+            {
+                "ProjectDependencies": [
+                    {
+                        "From": "*",
+                        "To": "*",
+                        "Description": "No direct project references allowed",
+                        "Policy": "Forbidden",
+                        "LinkType": "Direct",
+                        "Exceptions": [
+                            {
+                                "From": "TestProject.csproj",
+                                "To": "ReferencedProject.csproj",
+                                "Justification": "Legacy dependency to be removed",
+                                "IsTechDebt": true
+                            }
+                        ]
+                    }
+                ]
+            }
+            """));
+
+        test.TestState.AdditionalFiles.Add(
+            (ReferenceProtectorAnalyzer.DeclaredReferencesFile, """
+            TestProject.csproj	ProjectReferenceDirect	ReferencedProject.csproj
+            """));
+
+        // No diagnostics expected - the tech debt exception is still needed
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    /// <summary>
+    /// Verifies that a non-tech-debt exception that no longer matches does NOT trigger RP0006.
+    /// </summary>
+    [Fact]
+    public async Task NonTechDebtException_NoLongerNeeded_ShouldNotReportDiagnostic_Async()
+    {
+        var test = GetAnalyzer();
+        test.TestState.AdditionalFiles.Add(
+            ("DependencyRules.json", """
+            {
+                "ProjectDependencies": [
+                    {
+                        "From": "*",
+                        "To": "*",
+                        "Description": "No direct project references allowed",
+                        "Policy": "Forbidden",
+                        "LinkType": "Direct",
+                        "Exceptions": [
+                            {
+                                "From": "TestProject.csproj",
+                                "To": "OldProject.csproj",
+                                "Justification": "Legitimate exception"
+                            }
+                        ]
+                    }
+                ]
+            }
+            """));
+
+        test.TestState.AdditionalFiles.Add(
+            (ReferenceProtectorAnalyzer.DeclaredReferencesFile, """
+            TestProject.csproj	ProjectReferenceDirect	SomeOtherProject.csproj
+            """));
+
+        // RP0004 for the violating reference, but NO RP0006 since the exception is not tech debt
+        test.ExpectedDiagnostics.Add(DiagnosticResult.CompilerWarning("RP0004")
+            .WithNoLocation()
+            .WithMessage("Project reference 'TestProject.csproj' ==> 'SomeOtherProject.csproj' violates dependency rule 'No direct project references allowed' or one of its exceptions. Please remove the dependency or update 'DependencyRules.json' file to allow it."));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    /// <summary>
+    /// Verifies that the analyzer reports RP0006 when a tech debt exception for a package reference no longer matches.
+    /// </summary>
+    [Fact]
+    public async Task TechDebtPackageException_NoLongerNeeded_ShouldReportDiagnostic_Async()
+    {
+        var test = GetAnalyzer();
+        test.TestState.AdditionalFiles.Add(
+            ("DependencyRules.json", """
+            {
+                "PackageDependencies": [
+                    {
+                        "From": "TestProject.csproj",
+                        "To": "*",
+                        "Description": "No packages allowed",
+                        "Policy": "Forbidden",
+                        "Exceptions": [
+                            {
+                                "From": "TestProject.csproj",
+                                "To": "OldPackage",
+                                "Justification": "Legacy package to be removed",
+                                "IsTechDebt": true
+                            }
+                        ]
+                    }
+                ],
+                "ProjectDependencies": [
+                    {
+                        "From": "TestProject.csproj",
+                        "To": "*",
+                        "Description": "Allowed",
+                        "Policy": "Allowed",
+                        "LinkType": "DirectOrTransitive"
+                    }
+                ]
+            }
+            """));
+
+        test.TestState.AdditionalFiles.Add(
+            (ReferenceProtectorAnalyzer.DeclaredReferencesFile, """
+            TestProject.csproj	PackageReferenceDirect	SomeOtherPackage
+            """));
+
+        test.ExpectedDiagnostics.Add(DiagnosticResult.CompilerWarning("RP0005")
+            .WithNoLocation()
+            .WithMessage("Package reference 'TestProject.csproj' ==> 'SomeOtherPackage' violates dependency rule 'No packages allowed' or one of its exceptions. Please remove the dependency or update 'DependencyRules.json' file to allow it."));
+
+        test.ExpectedDiagnostics.Add(DiagnosticResult.CompilerWarning("RP0006")
+            .WithNoLocation()
+            .WithMessage("Tech debt exception 'TestProject.csproj' ==> 'OldPackage' in rule 'No packages allowed' no longer matches any declared reference and can be removed from 'DependencyRules.json'"));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    /// <summary>
+    /// Verifies IsTechDebt defaults to false when not specified in JSON.
+    /// </summary>
+    [Fact]
+    public async Task TechDebtException_DefaultFalse_NoFlagSpecified_ShouldNotReportDiagnostic_Async()
+    {
+        var test = GetAnalyzer();
+        test.TestState.AdditionalFiles.Add(
+            ("DependencyRules.json", """
+            {
+                "ProjectDependencies": [
+                    {
+                        "From": "*",
+                        "To": "*",
+                        "Description": "No direct project references allowed",
+                        "Policy": "Forbidden",
+                        "LinkType": "Direct",
+                        "Exceptions": [
+                            {
+                                "From": "TestProject.csproj",
+                                "To": "OldProject.csproj",
+                                "Justification": "Legitimate exception",
+                                "IsTechDebt": false
+                            }
+                        ]
+                    }
+                ]
+            }
+            """));
+
+        test.TestState.AdditionalFiles.Add(
+            (ReferenceProtectorAnalyzer.DeclaredReferencesFile, """
+            TestProject.csproj	ProjectReferenceDirect	SomeOtherProject.csproj
+            """));
+
+        // Only RP0004 for SomeOtherProject, no RP0006 since IsTechDebt is explicitly false
+        test.ExpectedDiagnostics.Add(DiagnosticResult.CompilerWarning("RP0004")
+            .WithNoLocation()
+            .WithMessage("Project reference 'TestProject.csproj' ==> 'SomeOtherProject.csproj' violates dependency rule 'No direct project references allowed' or one of its exceptions. Please remove the dependency or update 'DependencyRules.json' file to allow it."));
+
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
 }
