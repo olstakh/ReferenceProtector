@@ -262,6 +262,55 @@ bad json
     }
 
     /// <summary>
+    /// Validates that a tech debt exception scoped to a different project does NOT produce RP0006 during the current project's compilation.
+    /// </summary>
+    [Fact]
+    public async Task TechDebtException_ForDifferentProject_NoWarning_Async()
+    {
+        var projectA = CreateProject("A");
+        var projectB = CreateProject("B");
+        await AddProjectReference("A", "B");
+        var testRulesPath = Path.Combine(TestDirectory, "testRules.json");
+        // Use a From that references a project NOT in this solution (NonExistent.csproj),
+        // simulating a broad rule with tech debt exceptions for projects compiled separately.
+        File.WriteAllText(testRulesPath, $$"""
+        {
+            "ProjectDependencies": [
+            {
+                "From": "*",
+                "To": "*",
+                "LinkType": "Direct",
+                "Policy": "Forbidden",
+                "Description": "test rule",
+                "Exceptions": [
+                    {
+                        "From": "{{projectA.Replace("\\", "\\\\")}}",
+                        "To": "{{projectB.Replace("\\", "\\\\")}}",
+                        "Justification": "Tech debt for A",
+                        "IsTechDebt": true
+                    },
+                    {
+                        "From": "*NonExistent.csproj",
+                        "To": "*SomeLib.csproj",
+                        "Justification": "Tech debt for a project not in this compilation",
+                        "IsTechDebt": true
+                    }
+                ]
+            }           
+            ]
+        }
+    """);
+
+        var warnings = await Build(additionalArgs:
+            $"/p:DependencyRulesFile={testRulesPath}");
+
+        // A→B is covered by the first exception (still needed), so no RP0004 or RP0006 for A.
+        // The second exception (NonExistent→SomeLib) doesn't match any project being compiled,
+        // so it should NOT trigger RP0006 from either A or B.
+        Assert.Empty(warnings);
+    }
+
+    /// <summary>
     /// Validates that a non-tech-debt exception that no longer matches does NOT produce an RP0006 warning.
     /// </summary>
     [Fact]

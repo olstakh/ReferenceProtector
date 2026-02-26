@@ -152,7 +152,7 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
             }
 
             AnalyzeDeclaredProjectReferences(context, declaredReferences.ToImmutableArray(), thisProjectDependencyRules.ToImmutableArray(), Descriptors.ProjectReferenceViolation, dependencyRulesFile.Path);
-            ReportStaleTechDebtProjectExceptions(context, declaredReferences.ToImmutableArray(), thisProjectDependencyRules.ToImmutableArray(), dependencyRulesFile.Path);
+            ReportStaleTechDebtProjectExceptions(context, declaredReferences.ToImmutableArray(), thisProjectDependencyRules.ToImmutableArray(), dependencyRulesFile.Path, projectPath);
         }
         
         // Analyze package dependencies
@@ -165,7 +165,7 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
                 .Where(r => r.LinkType == ReferenceKind.PackageReferenceDirect);
 
             AnalyzeDeclaredPackageReferences(context, packageReferences.ToImmutableArray(), thisPackageDependencyRules.ToImmutableArray(), Descriptors.PackageReferenceViolation, dependencyRulesFile.Path);
-            ReportStaleTechDebtPackageExceptions(context, packageReferences.ToImmutableArray(), thisPackageDependencyRules.ToImmutableArray(), dependencyRulesFile.Path);
+            ReportStaleTechDebtPackageExceptions(context, packageReferences.ToImmutableArray(), thisPackageDependencyRules.ToImmutableArray(), dependencyRulesFile.Path, projectPath);
         }
     }
 
@@ -259,7 +259,8 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
         CompilationAnalysisContext context,
         ImmutableArray<ReferenceItem> declaredReferences,
         ImmutableArray<ProjectDependency> dependencyRules,
-        string dependencyRulesFile)
+        string dependencyRulesFile,
+        string projectPath)
     {
         foreach (var rule in dependencyRules)
         {
@@ -269,6 +270,11 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
             foreach (var exception in rule.Exceptions)
             {
                 if (!exception.IsTechDebt)
+                    continue;
+
+                // Only evaluate exceptions whose From matches the current project,
+                // since declared references only contain references for this compilation.
+                if (!IsMatchByName(exception.From, projectPath))
                     continue;
 
                 var exceptionStillNeeded = declaredReferences.Any(reference =>
@@ -295,7 +301,8 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
         CompilationAnalysisContext context,
         ImmutableArray<ReferenceItem> declaredReferences,
         ImmutableArray<PackageDependency> dependencyRules,
-        string dependencyRulesFile)
+        string dependencyRulesFile,
+        string projectPath)
     {
         foreach (var rule in dependencyRules)
         {
@@ -305,6 +312,11 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
             foreach (var exception in rule.Exceptions)
             {
                 if (!exception.IsTechDebt)
+                    continue;
+
+                // Only evaluate exceptions whose From matches the current project,
+                // since declared references only contain references for this compilation.
+                if (!IsMatchByName(exception.From, projectPath))
                     continue;
 
                 var exceptionStillNeeded = declaredReferences.Any(reference =>

@@ -415,6 +415,54 @@ public class ReferenceProtectorAnalyzerTests
     }
 
     /// <summary>
+    /// Verifies that a tech debt exception whose From does not match the current project does NOT trigger RP0006.
+    /// This covers the case where a broad rule (From: *) has exceptions for other projects that aren't part
+    /// of the current compilation — declared references only contain references for the current project.
+    /// </summary>
+    [Fact]
+    public async Task TechDebtException_ForDifferentProject_ShouldNotReportDiagnostic_Async()
+    {
+        var test = GetAnalyzer();
+        test.TestState.AdditionalFiles.Add(
+            ("DependencyRules.json", """
+            {
+                "ProjectDependencies": [
+                    {
+                        "From": "*",
+                        "To": "*",
+                        "Description": "No direct project references allowed",
+                        "Policy": "Forbidden",
+                        "LinkType": "Direct",
+                        "Exceptions": [
+                            {
+                                "From": "TestProject.csproj",
+                                "To": "ReferencedProject.csproj",
+                                "Justification": "Tech debt for TestProject",
+                                "IsTechDebt": true
+                            },
+                            {
+                                "From": "OtherProject.csproj",
+                                "To": "SomeLib.csproj",
+                                "Justification": "Tech debt for OtherProject",
+                                "IsTechDebt": true
+                            }
+                        ]
+                    }
+                ]
+            }
+            """));
+
+        test.TestState.AdditionalFiles.Add(
+            (ReferenceProtectorAnalyzer.DeclaredReferencesFile, """
+            TestProject.csproj	ProjectReferenceDirect	ReferencedProject.csproj
+            """));
+
+        // TestProject→ReferencedProject is covered by the first exception (still needed), so no RP0004 or RP0006.
+        // The second exception (OtherProject→SomeLib) is for a different project — should NOT trigger RP0006.
+        await test.RunAsync(TestContext.Current.CancellationToken);
+    }
+
+    /// <summary>
     /// Verifies IsTechDebt defaults to false when not specified in JSON.
     /// </summary>
     [Fact]
