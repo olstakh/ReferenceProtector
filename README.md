@@ -73,6 +73,8 @@ Schema of the rules file is as follows:
 }
 ```
 
+Note: for stability - use the version in the schema url, instead of `main`. For example for version `v1.2.3` - use `"$schema": https://raw.githubusercontent.com/olstakh/ReferenceProtector/v1.2.3/src/Build/DependencyRules.schema.json`
+
 Top `ProjectDependencies` object will contain a list of rules to validate against. Each rule has the following schema:
 
 - `From` / `To` - Full path regex for source and target projects to be matched.
