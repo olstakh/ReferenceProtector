@@ -8,6 +8,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DependencyRulesFile>$(MSBuildThisFileDirectory)DependencyRules.json</DependencyRulesFile>
     <ErrorLog>buildResult.sarif,version=2.1</ErrorLog>
+    <DisableTransitiveProjectReferences>false</DisableTransitiveProjectReferences>
   </PropertyGroup>
 
 </Project>
