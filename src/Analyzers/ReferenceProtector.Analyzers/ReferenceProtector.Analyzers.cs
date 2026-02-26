@@ -263,7 +263,7 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
     {
         foreach (var rule in dependencyRules)
         {
-            if (rule.Exceptions == null)
+            if (rule.Policy != Policy.Forbidden || rule.Exceptions == null)
                 continue;
 
             foreach (var exception in rule.Exceptions)
@@ -299,7 +299,7 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
     {
         foreach (var rule in dependencyRules)
         {
-            if (rule.Exceptions == null)
+            if (rule.Policy != Policy.Forbidden || rule.Exceptions == null)
                 continue;
 
             foreach (var exception in rule.Exceptions)
