@@ -271,6 +271,8 @@ bad json
         var projectB = CreateProject("B");
         await AddProjectReference("A", "B");
         var testRulesPath = Path.Combine(TestDirectory, "testRules.json");
+        // Use a From that references a project NOT in this solution (NonExistent.csproj),
+        // simulating a broad rule with tech debt exceptions for projects compiled separately.
         File.WriteAllText(testRulesPath, $$"""
         {
             "ProjectDependencies": [
@@ -288,9 +290,9 @@ bad json
                         "IsTechDebt": true
                     },
                     {
-                        "From": "{{projectB.Replace("\\", "\\\\")}}",
-                        "To": "*SomeOtherProject.csproj",
-                        "Justification": "Tech debt for B, not relevant for A",
+                        "From": "*NonExistent.csproj",
+                        "To": "*SomeLib.csproj",
+                        "Justification": "Tech debt for a project not in this compilation",
                         "IsTechDebt": true
                     }
                 ]
@@ -303,8 +305,8 @@ bad json
             $"/p:DependencyRulesFile={testRulesPath}");
 
         // A→B is covered by the first exception (still needed), so no RP0004 or RP0006 for A.
-        // The second exception (B→*SomeOtherProject.csproj) is for project B, so project A should NOT report RP0006 for it.
-        // Project B has no references, so no warnings from B either.
+        // The second exception (NonExistent→SomeLib) doesn't match any project being compiled,
+        // so it should NOT trigger RP0006 from either A or B.
         Assert.Empty(warnings);
     }
 
