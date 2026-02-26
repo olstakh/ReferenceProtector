@@ -12,13 +12,19 @@
                 "From": "*\\ClassA.csproj",
                 "To": "*\\ClassB.csproj",
                 "Justification": "This is an exception for testing purposes"
+            },
+            {
+                "From": "*\\ClassA.csproj",
+                "To": "*\\OldClass.csproj",
+                "IsTechDebt": true,
+                "Justification": "This is a tech debt exception for testing purposes. [Waning is expected]"
             }
         ]
     },
     {
         "From": "*\\ClassA.csproj",
         "To": "*\\ClassC.csproj",
-        "Description": "Can't reference this project transitively",
+        "Description": "Can't reference this project transitively [Warning is expected]",
         "Policy": "Forbidden",
         "LinkType": "Transitive",
         "Exceptions": [
