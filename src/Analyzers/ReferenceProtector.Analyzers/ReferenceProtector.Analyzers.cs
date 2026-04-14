@@ -337,10 +337,12 @@ public class ReferenceProtectorAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    private static bool IsMatchByName(string pattern, string project)
+    private static bool IsMatchByName(string pattern, string value)
     {
+        pattern = pattern.Replace('\\', '/');
+        value = value.Replace('\\', '/');
         var regex = Regex.Escape(pattern).Replace("\\*", ".*") + "$";
-        var match = Regex.IsMatch(project, regex, RegexOptions.IgnoreCase);
+        var match = Regex.IsMatch(value, regex, RegexOptions.IgnoreCase);
         return match;
     }    
 }
